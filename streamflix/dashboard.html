@@ -15,20 +15,29 @@
     (async function() {
       console.log('🔵 Dashboard: Verificando autenticação...');
       
-      // Evitar loop infinito
+      // Evitar loop infinito - aumentar tempo para 5 segundos
       const lastCheck = sessionStorage.getItem('dashboard_last_check');
       const now = Date.now();
       
-      if (lastCheck && (now - parseInt(lastCheck)) < 2000) {
+      if (lastCheck && (now - parseInt(lastCheck)) < 5000) {
         console.log('🔴 Dashboard: Verificação muito rápida, possível loop detectado!');
-        alert('Erro: Loop de redirecionamento detectado. Limpando cache...');
+        console.log('🔴 Dashboard: Última verificação:', new Date(parseInt(lastCheck)));
+        console.log('🔴 Dashboard: Agora:', new Date(now));
+        console.log('🔴 Dashboard: Diferença:', (now - parseInt(lastCheck)) / 1000, 'segundos');
+        
+        alert('⚠️ Loop detectado!\n\nO sistema está redirecionando muito rápido.\nVou limpar o cache e você precisará fazer login novamente.');
+        
         sessionStorage.clear();
         localStorage.clear();
+        
+        // Aguardar 2 segundos antes de redirecionar
+        await new Promise(resolve => setTimeout(resolve, 2000));
         window.location.replace('index.html');
         return;
       }
       
       sessionStorage.setItem('dashboard_last_check', now.toString());
+      console.log('🟡 Dashboard: Timestamp salvo:', now);
       
       function getUser() {
         try {
@@ -43,7 +52,7 @@
       // Sem sessão → login
       if (!user || !user.id || !user.role) {
         console.log('🔴 Dashboard: Sem usuário, redirecionando para login...');
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         window.location.replace('index.html');
         document.documentElement.style.display = 'none';
         throw new Error('Unauthorized');
@@ -51,14 +60,15 @@
       
       // Não é admin → home
       if (user.role !== 'admin') {
-        console.log('🔴 Dashboard: Não é admin, redirecionando para home...');
-        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log('🔴 Dashboard: Não é admin (role:', user.role, '), redirecionando para home...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
         window.location.replace('home.html');
         document.documentElement.style.display = 'none';
         throw new Error('Forbidden');
       }
       
-      console.log('🟢 Dashboard: Admin autenticado, carregando dashboard...');
+      console.log('🟢 Dashboard: Admin autenticado! Carregando dashboard...');
+      console.log('🟢 Dashboard: Usuário:', user.name, '| Role:', user.role);
     })();
   </script>
 </head>

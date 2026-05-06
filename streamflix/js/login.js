@@ -73,10 +73,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     setLoading(btn, false);
     if (result.success) {
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
-      setTimeout(() => {
-        const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
-        window.location.href = dest;
-      }, 1000);
+      
+      // Aguardar 2 segundos antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
+      console.log('🟢 Login: Redirecionando para:', dest);
+      window.location.href = dest;
     } else {
       showAlert('loginAlert', 'error', result.message);
     }
