@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineFlix Hub — Início</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="stylesheet" href="css/home.css" />
+  <script>
+    // Proteção rápida antes de renderizar
+    (function() {
+      try {
+        const d = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
+        if (!d) { window.location.replace('index.html'); document.documentElement.style.display='none'; throw 0; }
+        const u = JSON.parse(d);
+        if (!u || !u.id) { window.location.replace('index.html'); document.documentElement.style.display='none'; throw 0; }
+      } catch(e) { if(e!==0) window.location.replace('index.html'); }
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" id="navbar">
+  <a href="home.html" class="nav-logo">CineFlix<span> Hub</span></a>
+  <ul class="nav-links">
+    <li><a class="active" data-filter="all">Início</a></li>
+    <li><a data-filter="tv">Séries</a></li>
+    <li><a data-filter="movie">Filmes</a></li>
+    <li><a data-filter="trending">Em Alta</a></li>
+    <li><a data-filter="top">Top Avaliados</a></li>
+  </ul>
+  <div class="nav-right">
+    <!-- Animated Search -->
+    <div class="search-inline" id="searchInline">
+      <input type="text" id="searchInlineInput" class="search-inline-input" placeholder="Títulos, pessoas, gêneros" autocomplete="off" />
+      <button class="btn-search-icon" id="btnSearch" aria-label="Buscar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+    </div>
+    <div class="nav-user">
+      <div class="nav-avatar" id="navAvatar">
+        <!-- Avatar renderizado via JS -->
+      </div>
+      <span class="nav-user-name" id="navUserName">Perfil</span>
+      <span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </span>
+      <div class="nav-dropdown">
+        <a href="profiles.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Trocar Perfil
+        </a>
+        <a href="settings.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Configurações
+        </a>
+        <a href="premium.html" id="premiumNavLink" style="color:#f5c518;">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="color:#f5c518;">
+            <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/>
+          </svg>
+          Assinar VIP
+        </a>
+        <a href="#" id="adminLink" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Painel Admin
+        </a>
+        <hr />
+        <button id="btnLogout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Sair
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-content" id="heroContent">
+    <div class="hero-badge">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="color:#ff6b6b;">
+        <path d="M12 2c.5 0 1 .3 1.2.8l2.4 4.9 5.4.8c.6.1.8.8.4 1.2l-3.9 3.8.9 5.4c.1.6-.5 1-1 .7L12 17.3l-4.8 2.5c-.5.3-1.1-.1-1-.7l.9-5.4L3.2 9.7c-.4-.4-.2-1.1.4-1.2l5.4-.8L11.2 2.8c.2-.5.6-.8 1-.8z"/>
+      </svg>
+      Em Alta
+    </div>
+    <h1 class="hero-title" id="heroTitle">Carregando...</h1>
+    <div class="hero-meta" id="heroMeta"></div>
+    <p class="hero-desc" id="heroDesc"></p>
+    <div class="hero-actions">
+      <button class="btn-play" id="heroPlay">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Assistir
+      </button>
+      <button class="btn-info" id="heroInfo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="8" stroke-width="3"/>
+          <line x1="12" y1="12" x2="12" y2="16"/>
+        </svg>
+        Mais Informações
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTINUAR ASSISTINDO ===== -->
+<section id="continueWatchingSection" class="content-section continue-watching-section" style="display:none; padding-top: calc(var(--nav-height) + 16px);">
+  <div class="section-header">
+    <h2 class="section-title">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="color:#e50914;vertical-align:middle;margin-right:6px;">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+      Continuar Assistindo
+    </h2>
+  </div>
+  <div class="carousel-wrap">
+    <button class="carousel-btn prev" onclick="scrollCar(this,-1)">‹</button>
+    <div class="carousel" id="carContinue"></div>
+    <button class="carousel-btn next" onclick="scrollCar(this,1)">›</button>
+  </div>
+</section>
+
+<!-- ===== MAIN ===== -->
+<main id="mainContent">
+  <!-- Em Alta -->
+  <section class="content-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="color:#ff6b6b;vertical-align:middle;margin-right:6px;">
+          <path d="M12 2c.5 0 1 .3 1.2.8l2.4 4.9 5.4.8c.6.1.8.8.4 1.2l-3.9 3.8.9 5.4c.1.6-.5 1-1 .7L12 17.3l-4.8 2.5c-.5.3-1.1-.1-1-.7l.9-5.4L3.2 9.7c-.4-.4-.2-1.1.4-1.2l5.4-.8L11.2 2.8c.2-.5.6-.8 1-.8z"/>
+        </svg>
+        Em Alta <span class="see-all">Ver tudo</span>
+      </h2>
+    </div>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" onclick="scrollCar(this,-1)">‹</button>
+      <div class="carousel" id="carTrending"></div>
+      <button class="carousel-btn next" onclick="scrollCar(this,1)">›</button>
+    </div>
+  </section>
+
+  <!-- Filmes Populares -->
+  <section class="content-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="vertical-align:middle;margin-right:6px;">
+          <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+          <line x1="7" y1="2" x2="7" y2="22"/>
+          <line x1="17" y1="2" x2="17" y2="22"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <line x1="2" y1="7" x2="7" y2="7"/>
+          <line x1="2" y1="17" x2="7" y2="17"/>
+          <line x1="17" y1="17" x2="22" y2="17"/>
+          <line x1="17" y1="7" x2="22" y2="7"/>
+        </svg>
+        Filmes Populares <span class="see-all">Ver tudo</span>
+      </h2>
+    </div>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" onclick="scrollCar(this,-1)">‹</button>
+      <div class="carousel" id="carMovies"></div>
+      <button class="carousel-btn next" onclick="scrollCar(this,1)">›</button>
+    </div>
+  </section>
+
+  <!-- Séries Populares -->
+  <section class="content-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="vertical-align:middle;margin-right:6px;">
+          <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+          <polyline points="17 2 12 7 7 2"/>
+        </svg>
+        Séries Populares <span class="see-all">Ver tudo</span>
+      </h2>
+    </div>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" onclick="scrollCar(this,-1)">‹</button>
+      <div class="carousel" id="carSeries"></div>
+      <button class="carousel-btn next" onclick="scrollCar(this,1)">›</button>
+    </div>
+  </section>
+
+  <!-- Top Avaliados -->
+  <section class="content-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="color:#f5c518;vertical-align:middle;margin-right:6px;">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Top Avaliados <span class="see-all">Ver tudo</span>
+      </h2>
+    </div>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" onclick="scrollCar(this,-1)">‹</button>
+      <div class="carousel" id="carTop"></div>
+      <button class="carousel-btn next" onclick="scrollCar(this,1)">›</button>
+    </div>
+  </section>
+
+  <!-- Lançamentos -->
+  <section class="content-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="vertical-align:middle;margin-right:6px;">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+          <path d="M19 3v4M21 5h-4"/>
+        </svg>
+        Lançamentos <span class="see-all">Ver tudo</span>
+      </h2>
+    </div>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" onclick="scrollCar(this,-1)">‹</button>
+      <div class="carousel" id="carNew"></div>
+      <button class="carousel-btn next" onclick="scrollCar(this,1)">›</button>
+    </div>
+  </section>
+</main>
+
+<!-- ===== MODAL PREMIUM/VIP ===== -->
+<div class="premium-modal-overlay" id="premiumModal">
+  <div class="premium-modal">
+    <button class="premium-modal-close" id="btnClosePremiumModal">✕</button>
+    <div class="premium-modal-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14l-3-3 1.41-1.41L11 12.17l4.59-4.58L17 9l-6 6z"/>
+      </svg>
+    </div>
+    <h2 class="premium-modal-title">Conteúdo VIP</h2>
+    <p class="premium-modal-subtitle" id="premiumModalSubtitle">Este conteúdo estará disponível para todos em breve</p>
+    <div class="premium-countdown" id="premiumCountdown">
+      <div class="countdown-item">
+        <span class="countdown-value" id="cdDays">00</span>
+        <span class="countdown-label">dias</span>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-item">
+        <span class="countdown-value" id="cdHours">00</span>
+        <span class="countdown-label">horas</span>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-item">
+        <span class="countdown-value" id="cdMinutes">00</span>
+        <span class="countdown-label">min</span>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-item">
+        <span class="countdown-value" id="cdSeconds">00</span>
+        <span class="countdown-label">seg</span>
+      </div>
+    </div>
+    <div class="premium-modal-actions">
+      <button class="btn-premium-subscribe" id="btnSubscribePremium">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z" transform="rotate(0)"/>
+          <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/>
+        </svg>
+        Assinar Premium
+      </button>
+      <button class="btn-premium-close" id="btnClosePremiumModal2">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SEARCH RESULTS DROPDOWN ===== -->
+<div class="search-dropdown" id="searchDropdown">
+  <div class="search-results" id="searchResults">
+    <p style="color:var(--text-muted);font-size:0.9rem;padding:16px;">Digite para buscar...</p>
+  </div>
+</div>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div class="detail-modal" id="detailModal">
+  <div class="detail-card" id="detailCard">
+    <button class="btn-close-detail" id="btnCloseDetail">✕</button>
+    <div class="detail-backdrop">
+      <img id="detailBackdrop" src="" alt="" />
+      <div class="detail-backdrop-actions">
+        <button class="btn-play" id="detailPlay" style="padding:10px 22px;font-size:0.9rem;">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Assistir
+        </button>
+        <button class="btn-info" id="detailAddList" style="padding:10px 18px;font-size:0.9rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Lista
+        </button>
+      </div>
+    </div>
+    <div class="detail-body">
+      <h2 class="detail-title" id="detailTitle"></h2>
+      <div class="detail-meta" id="detailMeta"></div>
+      <p class="detail-overview" id="detailOverview"></p>
+      <div class="detail-info" id="detailInfo"></div>
+      <div class="seasons-wrap" id="seasonsWrap" style="display:none;">
+        <h3>Episódios</h3>
+        <div class="season-tabs" id="seasonTabs"></div>
+        <div class="episodes-grid" id="episodesGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PLAYER FULLSCREEN ===== -->
+<!-- Overlay de tela cheia total — sem header, sem borda, 100% da tela -->
+<div id="playerFullscreen" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9000;
+  background:#000;
+">
+  <!-- Barra superior fina que aparece ao mover o mouse -->
+  <div id="playerBar" style="
+    position:absolute;
+    top:0;left:0;right:0;
+    z-index:10;
+    background:linear-gradient(to bottom,rgba(0,0,0,0.85),transparent);
+    padding:12px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    opacity:0;
+    transition:opacity 0.3s;
+    pointer-events:none;
+  ">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button id="btnClosePlayer" style="
+        background:rgba(229,9,20,0.9);border:none;color:#fff;
+        width:36px;height:36px;border-radius:50%;font-size:1.1rem;
+        cursor:pointer;display:flex;align-items:center;justify-content:center;
+        pointer-events:all;
+      ">✕</button>
+      <span id="playerTitle" style="font-size:0.95rem;font-weight:700;color:#fff;font-family:'Helvetica Neue',Arial,sans-serif;"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;pointer-events:all;">
+      <select id="epSelect" style="display:none;background:rgba(229,9,20,0.15);border:1px solid rgba(229,9,20,0.3);border-radius:6px;color:#fff;padding:6px 10px;font-size:0.82rem;outline:none;cursor:pointer;max-width:260px;"></select>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="playerLoading" style="
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:16px;background:#000;z-index:5;
+    font-family:'Helvetica Neue',Arial,sans-serif;color:#b3b3b3;font-size:0.9rem;
+  ">
+    <div style="width:44px;height:44px;border:3px solid rgba(229,9,20,0.15);border-top-color:#e50914;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+    <span>Carregando player...</span>
+  </div>
+
+  <!-- iframe ocupa 100% -->
+  <iframe id="playerIframe"
+    allowfullscreen
+    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+    referrerpolicy="no-referrer"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-pointer-lock"
+    style="width:100%;height:100%;border:none;display:block;opacity:0;transition:opacity 0.3s;position:relative;z-index:1;"
+  ></iframe>
+
+  <!-- Camada que bloqueia o botão "Mostrar Episódios" do embedplay para não-VIP -->
+  <div id="episodeBlockLayer" style="
+    display:none;
+    position:absolute;
+    bottom:0; left:50%; transform:translateX(-50%);
+    width:200px; height:60px;
+    z-index:8;
+    cursor:not-allowed;
+    background:transparent;
+  " title="Navegação de episódios bloqueada para não-VIP" onclick="
+    event.stopPropagation();
+    document.getElementById('playerFullscreen').style.display='none';
+    document.getElementById('playerIframe').src='';
+    document.body.style.overflow='';
+    if(window._premiumModalCallback) window._premiumModalCallback();
+  "></div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-col">
+      <h4>CineFlix Hub</h4>
+      <ul>
+        <li><a href="#">Sobre nós</a></li>
+        <li><a href="#">Imprensa</a></li>
+        <li><a href="#">Empregos</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Suporte</h4>
+      <ul>
+        <li><a href="#">Central de Ajuda</a></li>
+        <li><a href="#">Fale Conosco</a></li>
+        <li><a href="#">Acessibilidade</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Termos de Uso</a></li>
+        <li><a href="#">Privacidade</a></li>
+        <li><a href="#">Cookies</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Redes Sociais</h4>
+      <ul>
+        <li><a href="#">📘 Facebook</a></li>
+        <li><a href="#">📸 Instagram</a></li>
+        <li><a href="#">🐦 Twitter/X</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>CineFlix Hub Brasil &copy; 2026</span>
+    <span>Dúvidas? <strong>0800 591 1234</strong></span>
+  </div>
+</footer>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- ===== ANIMAÇÃO CINEMATOGRÁFICA ===== -->
+<div class="cinema-transition" id="cinemaTransition">
+  <div class="cinema-bar top"></div>
+  <div class="cinema-bar bottom"></div>
+  <div class="cinema-flash"></div>
+  <div class="cinema-logo">CineFlix<span> Hub</span></div>
+  <div class="cinema-fade"></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/tmdb.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+
+  // ---- AUTH ----
+  const user = Auth.requireAuth('index.html');
+  if (!user) return;
+
+  // ---- PROFILE CHECK ----
+  let activeProfile = Auth.getCurrentProfile();
+  if (!activeProfile) {
+    const profiles = Auth.getProfiles(user.id);
+    if (profiles.length) {
+      if (profiles.length === 1 && !profiles[0].pin) {
+        Auth.setCurrentProfile(profiles[0]);
+        activeProfile = profiles[0];
+      } else {
+        window.location.href = 'profiles.html';
+        return;
+      }
+    } else {
+      window.location.href = 'profiles.html';
+      return;
+    }
+  }
+
+  // ---- AVATAR DEFINITIONS ----
+  const AVATARS = [
+    { gradient: 'linear-gradient(135deg, #e50914, #b20710)' },
+    { gradient: 'linear-gradient(135deg, #0071eb, #0050a8)' },
+    { gradient: 'linear-gradient(135deg, #46d369, #2d8a42)' },
+    { gradient: 'linear-gradient(135deg, #f5c518, #c49a14)' },
+    { gradient: 'linear-gradient(135deg, #e87c03, #b55e02)' },
+    { gradient: 'linear-gradient(135deg, #9b59b6, #6c3483)' },
+    { gradient: 'linear-gradient(135deg, #1abc9c, #148f77)' },
+    { gradient: 'linear-gradient(135deg, #e74c3c, #922b21)' },
+    { gradient: 'linear-gradient(135deg, #3498db, #1a5276)' },
+    { gradient: 'linear-gradient(135deg, #2ecc71, #1a7a43)' },
+    { gradient: 'linear-gradient(135deg, #f39c12, #9a6007)' },
+    { gradient: 'linear-gradient(135deg, #8e44ad, #5b2c6f)' },
+    { gradient: 'linear-gradient(135deg, #16a085, #0e6655)' },
+    { gradient: 'linear-gradient(135deg, #d35400, #873600)' },
+    { gradient: 'linear-gradient(135deg, #2980b9, #1a5276)' },
+    { gradient: 'linear-gradient(135deg, #27ae60, #1a6b3c)' },
+    { gradient: 'linear-gradient(135deg, #c0392b, #7b241c)' },
+    { gradient: 'linear-gradient(135deg, #7f8c8d, #4d5656)' },
+  ];
+
+  function avatarSVG() {
+    return `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:70%;height:70%;opacity:0.9;">
+      <circle cx="40" cy="28" r="16" fill="rgba(255,255,255,0.85)"/>
+      <path d="M10 72c0-16.569 13.431-30 30-30s30 13.431 30 30" fill="rgba(255,255,255,0.85)"/>
+    </svg>`;
+  }
+
+  // ---- RENDER NAV AVATAR ----
+  const av = AVATARS[activeProfile.avatar] || AVATARS[0];
+  const navAvatarEl = document.getElementById('navAvatar');
+  navAvatarEl.style.background = av.gradient;
+  navAvatarEl.style.borderRadius = '6px';
+  navAvatarEl.style.overflow = 'hidden';
+  navAvatarEl.style.display = 'flex';
+  navAvatarEl.style.alignItems = 'center';
+  navAvatarEl.style.justifyContent = 'center';
+  navAvatarEl.innerHTML = avatarSVG();
+
+  document.getElementById('navUserName').textContent = activeProfile.name;
+
+  if (user.role === 'admin') {
+    const al = document.getElementById('adminLink');
+    al.style.display = 'flex';
+    al.href = 'dashboard.html';
+  }
+
+  // Esconde "Assinar VIP" se já é premium
+  if (Auth.isPremium(user.id)) {
+    const premiumLink = document.getElementById('premiumNavLink');
+    if (premiumLink) premiumLink.style.display = 'none';
+    // Adiciona badge VIP no nome
+    document.getElementById('navUserName').innerHTML =
+      activeProfile.name + ' <span style="background:linear-gradient(135deg,#f5c518,#e6b800);color:#000;font-size:0.6rem;font-weight:800;padding:1px 6px;border-radius:10px;vertical-align:middle;margin-left:4px;">VIP</span>';
+  }
+
+  document.getElementById('btnLogout').addEventListener('click', () => Auth.logout());
+
+  // ---- NAVBAR SCROLL ----
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // ---- HELPERS ----
+  function toast(msg, type = 'info') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${{success:'✓',error:'✕',info:'ℹ'}[type]||'ℹ'}</span><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, 3500);
+  }
+
+  function skeletons(n = 8) {
+    return Array(n).fill(0).map(() => `
+      <div class="card-skeleton">
+        <div class="skeleton poster-sk"></div>
+        <div class="skeleton title-sk"></div>
+        <div class="skeleton meta-sk"></div>
+      </div>`).join('');
+  }
+
+  function mediaType(item) {
+    return item.media_type || (item.first_air_date ? 'tv' : 'movie');
+  }
+
+  function year(item) {
+    const d = item.release_date || item.first_air_date || '';
+    return d ? d.substring(0, 4) : '—';
+  }
+
+  function rating(item) {
+    return item.vote_average ? item.vote_average.toFixed(1) : '—';
+  }
+
+  // ---- CONTINUAR ASSISTINDO ----
+  function renderContinueWatching() {
+    const progressList = Auth.getProgress(activeProfile.id);
+    const section = document.getElementById('continueWatchingSection');
+    const car = document.getElementById('carContinue');
+    if (!progressList.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    car.innerHTML = progressList.map(item => {
+      // Poster: usa o salvo, ou placeholder com gradiente colorido
+      const posterHtml = item.poster
+        ? `<img src="${item.poster}" alt="${item.title}" loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+           <div class="no-poster" style="display:none;">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+               ${item.type==='tv'?'<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>'
+                                :'<rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/>'}
+             </svg>
+             <span>${item.title}</span>
+           </div>`
+        : `<div class="no-poster" id="poster-${item.id}" style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+               ${item.type==='tv'?'<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>'
+                                :'<rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/>'}
+             </svg>
+             <span>${item.title}</span>
+           </div>`;
+
+      const epLabel = item.type === 'tv' && item.season ? `T${item.season} E${item.episode || 1}` : '';
+      const progress = item.progress || 0;
+      const safeTitle = item.title.replace(/'/g, "\\'");
+      return `
+        <div class="card continue-card" data-id="${item.id}" data-type="${item.type}">
+          <div class="card-poster">
+            ${posterHtml}
+            <div class="continue-progress-bar"><div class="continue-progress-fill" style="width:${progress}%"></div></div>
+            <div class="continue-overlay">
+              <div class="continue-overlay-info">
+                <div class="continue-overlay-title">${item.title}</div>
+                ${epLabel ? `<div class="continue-overlay-ep">${epLabel}</div>` : ''}
+              </div>
+              <button class="continue-play-btn" title="Continuar" onclick="event.stopPropagation();openPlayer(${item.id},'${item.type}','${safeTitle}',${item.season||1},${item.episode||1})">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+            </div>
+            <button class="continue-remove-btn" title="Remover" onclick="event.stopPropagation();removeContinueItem(${item.id},'${item.type}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="card-info">
+            <div class="card-title">${item.title}</div>
+            <div class="card-meta">${epLabel || (item.type === 'tv' ? 'Série' : 'Filme')}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // Busca posters faltando de forma assíncrona
+    progressList.forEach(item => {
+      if (!item.poster) {
+        const el = document.getElementById(`poster-${item.id}`);
+        if (!el) return;
+        TMDB.details(item.type === 'tv' ? 'tv' : 'movie', item.id)
+          .then(details => {
+            if (details.poster_path) {
+              const url = TMDB.poster(details.poster_path);
+              // Atualiza no DOM
+              const cardPoster = el.parentElement;
+              if (cardPoster) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = item.title;
+                img.loading = 'lazy';
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+                cardPoster.insertBefore(img, el);
+                el.style.display = 'none';
+              }
+              // Salva no progresso para próxima vez
+              const list = Auth.getProgress(activeProfile.id);
+              const idx = list.findIndex(i => i.id === item.id && i.type === item.type);
+              if (idx !== -1) {
+                list[idx].poster = url;
+                localStorage.setItem(`cf_progress_${activeProfile.id}`, JSON.stringify(list));
+              }
+            }
+          }).catch(() => {});
+      }
+    });
+  }
+
+  window.removeContinueItem = (id, type) => {
+    Auth.removeProgress(activeProfile.id, id, type);
+    renderContinueWatching();
+    toast('Removido do histórico', 'info');
+  };
+
+  // ---- PREMIUM MODAL ----
+  let premiumCountdownTimer = null;
+
+  function showPremiumModal(releaseDate, title) {
+    const modal = document.getElementById('premiumModal');
+    const release = new Date(releaseDate);
+    const now = new Date();
+    const diffMs = release - now;
+    const diffDays = Math.ceil(diffMs / 86400000);
+
+    // Texto dinâmico baseado no tempo restante
+    let subtitle;
+    if (diffDays <= 1) {
+      subtitle = `"${title}" estará disponível para todos em menos de 24 horas`;
+    } else {
+      subtitle = `"${title}" estará disponível para todos em ${diffDays} dias`;
+    }
+    document.getElementById('premiumModalSubtitle').textContent = subtitle;
+
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    function updateCountdown() {
+      const diff = new Date(releaseDate) - new Date();
+      if (diff <= 0) {
+        document.getElementById('cdDays').textContent    = '00';
+        document.getElementById('cdHours').textContent   = '00';
+        document.getElementById('cdMinutes').textContent = '00';
+        document.getElementById('cdSeconds').textContent = '00';
+        closePremiumModal();
+        return;
+      }
+      document.getElementById('cdDays').textContent    = String(Math.floor(diff / 86400000)).padStart(2,'0');
+      document.getElementById('cdHours').textContent   = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
+      document.getElementById('cdMinutes').textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+      document.getElementById('cdSeconds').textContent = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+    }
+    updateCountdown();
+    if (premiumCountdownTimer) clearInterval(premiumCountdownTimer);
+    premiumCountdownTimer = setInterval(updateCountdown, 1000); // atualiza a cada segundo
+  }
+
+  function closePremiumModal() {
+    document.getElementById('premiumModal').classList.remove('show');
+    document.body.style.overflow = '';
+    if (premiumCountdownTimer) { clearInterval(premiumCountdownTimer); premiumCountdownTimer = null; }
+  }
+
+  document.getElementById('btnClosePremiumModal').addEventListener('click', closePremiumModal);
+  document.getElementById('btnClosePremiumModal2').addEventListener('click', closePremiumModal);
+  document.getElementById('premiumModal').addEventListener('click', e => { if (e.target === document.getElementById('premiumModal')) closePremiumModal(); });
+  document.getElementById('btnSubscribePremium').addEventListener('click', () => {
+    closePremiumModal();
+    window.location.href = 'premium.html';
+  });
+
+  // ---- HANDLE PLAY (with premium check) ----
+  window.handlePlay = (id, type, title, season, episode, posterPath, releaseDate) => {
+    const lockInfo = Auth.isContentPremiumLocked(id, type, user.id, releaseDate);
+    if (lockInfo && lockInfo.locked) {
+      showPremiumModal(lockInfo.releaseDate, title);
+      return;
+    }
+    openPlayer(id, type, title, season || 1, episode || 1, posterPath);
+  };
+
+  function createCard(item) {
+    const type  = mediaType(item);
+    const title = item.title || item.name || 'Sem título';
+    const yr    = year(item);
+    const rt    = rating(item);
+    const poster = TMDB.poster(item.poster_path);
+    const safeTitle = title.replace(/'/g, "\\'");
+    // Data de lançamento do item (para verificação automática de premium)
+    const itemReleaseDate = item.release_date || item.first_air_date || null;
+    const safePoster = item.poster_path ? `'${item.poster_path}'` : 'null';
+    const safeRelease = itemReleaseDate ? `'${itemReleaseDate}'` : 'null';
+
+    const posterHtml = poster
+      ? `<img src="${poster}" alt="${title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=no-poster><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\' width=\\'40\\' height=\\'40\\'><rect x=\\'2\\' y=\\'2\\' width=\\'20\\' height=\\'20\\' rx=\\'2\\'/><line x1=\\'7\\' y1=\\'2\\' x2=\\'7\\' y2=\\'22\\'/><line x1=\\'17\\' y1=\\'2\\' x2=\\'17\\' y2=\\'22\\'/><line x1=\\'2\\' y1=\\'12\\' x2=\\'22\\' y2=\\'12\\'/></svg><span>${title}</span></div>'">`
+      : `<div class="no-poster"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">${type==='tv'?'<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>'  :'<rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/>'}</svg><span>${title}</span></div>`;
+
+    const lockInfo = Auth.isContentPremiumLocked(item.id, type, user.id, itemReleaseDate);
+    const isPremiumLocked = lockInfo && lockInfo.locked;
+    const premiumBadge = isPremiumLocked
+      ? `<div class="card-premium-badge"><svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/></svg> VIP</div>`
+      : '';
+
+    return `
+      <div class="card" data-id="${item.id}" data-type="${type}">
+        <div class="card-poster">
+          ${posterHtml}
+          ${premiumBadge}
+          <div class="card-overlay">
+            <div class="card-overlay-title">${title}</div>
+            <div class="card-overlay-meta">${yr} · <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11" style="color:#f5c518;vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>${rt}</div>
+            <div class="card-overlay-actions">
+              <button class="card-btn play" title="Assistir" onclick="event.stopPropagation();handlePlay(${item.id},'${type}','${safeTitle}',1,1,${safePoster},${safeRelease})">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+              <button class="card-btn" title="Detalhes" onclick="event.stopPropagation();openDetail(${item.id},'${type}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8" stroke-width="3"/><line x1="12" y1="12" x2="12" y2="16"/>
+                </svg>
+              </button>
+              <button class="card-btn" title="Adicionar à lista" onclick="event.stopPropagation();toast('Adicionado à lista!','success')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">${title}</div>
+          <div class="card-meta">${yr} · <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11" style="color:#f5c518;vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>${rt}</div>
+        </div>
+      </div>`;
+  }
+
+  function renderCarousel(id, items) {
+    document.getElementById(id).innerHTML = items.map(createCard).join('');
+  }
+
+  function attachCardClicks(container) {
+    container.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => openDetail(card.dataset.id, card.dataset.type));
+    });
+  }
+
+  // ---- HERO ----
+  let heroItem = null;
+
+  function setHero(item) {
+    heroItem = item;
+    const type  = mediaType(item);
+    const title = item.title || item.name;
+    const bg    = TMDB.backdrop(item.backdrop_path, 'original');
+    const yr    = year(item);
+    const rt    = rating(item);
+
+    document.getElementById('heroBg').style.backgroundImage = bg ? `url(${bg})` : 'linear-gradient(135deg,#1a1a2e,#16213e)';
+    document.getElementById('heroTitle').textContent = title;
+    document.getElementById('heroDesc').textContent  = item.overview || 'Sem descrição disponível.';
+    document.getElementById('heroMeta').innerHTML = `
+      <span class="rating"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="color:#f5c518;vertical-align:middle;margin-right:3px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${rt}</span>
+      <span class="year">${yr}</span>
+      <span class="badge-hd">HD</span>
+      <span>${type === 'tv' ? 'Série' : 'Filme'}</span>`;
+
+    document.getElementById('heroPlay').onclick = () => handlePlay(item.id, type, title, 1, 1, item.poster_path || null, item.release_date || item.first_air_date || null);
+    document.getElementById('heroInfo').onclick = () => openDetail(item.id, type);
+  }
+
+  // ---- NAV FILTER LOGIC ----
+  async function loadFilter(filter) {
+    const main = document.getElementById('mainContent');
+    function sectionSkeleton(titleHtml, id) {
+      return `<section class="content-section"><div class="section-header"><h2 class="section-title">${titleHtml}</h2></div><div class="carousel-wrap"><button class="carousel-btn prev" onclick="scrollCar(this,-1)">‹</button><div class="carousel" id="${id}">${skeletons(10)}</div><button class="carousel-btn next" onclick="scrollCar(this,1)">›</button></div></section>`;
+    }
+    if (filter === 'all') { location.reload(); return; }
+    if (filter === 'tv') {
+      main.innerHTML = sectionSkeleton('🔥 Séries em Alta','fCarTrendingTv') + sectionSkeleton('📺 Séries Populares','fCarPopularTv') + sectionSkeleton('⭐ Top Séries','fCarTopTv');
+      try {
+        const [a,b,c] = await Promise.all([TMDB.trending('tv','week'), TMDB.popular('tv'), TMDB.topRated('tv')]);
+        if ((a.results||[]).length) setHero(a.results[0]);
+        renderCarousel('fCarTrendingTv', a.results||[]); renderCarousel('fCarPopularTv', b.results||[]); renderCarousel('fCarTopTv', c.results||[]);
+        attachCardClicks(main);
+      } catch(e) { toast('Erro ao carregar séries.','error'); }
+    } else if (filter === 'movie') {
+      main.innerHTML = sectionSkeleton('🔥 Filmes em Alta','fCarTrendingMov') + sectionSkeleton('🎬 Filmes Populares','fCarPopularMov') + sectionSkeleton('🌙 Lançamentos','fCarNowPlaying');
+      try {
+        const [a,b,c] = await Promise.all([TMDB.trending('movie','week'), TMDB.popular('movie'), TMDB.nowPlaying()]);
+        if ((a.results||[]).length) setHero(a.results[0]);
+        renderCarousel('fCarTrendingMov', a.results||[]); renderCarousel('fCarPopularMov', b.results||[]); renderCarousel('fCarNowPlaying', c.results||[]);
+        attachCardClicks(main);
+      } catch(e) { toast('Erro ao carregar filmes.','error'); }
+    } else if (filter === 'trending') {
+      main.innerHTML = sectionSkeleton('🔥 Em Alta Agora','fCarTrendingAll');
+      try {
+        const a = await TMDB.trending('all','week');
+        if ((a.results||[]).length) setHero(a.results[0]);
+        renderCarousel('fCarTrendingAll', a.results||[]);
+        attachCardClicks(main);
+      } catch(e) { toast('Erro ao carregar trending.','error'); }
+    } else if (filter === 'top') {
+      main.innerHTML = sectionSkeleton('⭐ Top Filmes','fCarTopMov') + sectionSkeleton('⭐ Top Séries','fCarTopTvTop');
+      try {
+        const [a,b] = await Promise.all([TMDB.topRated('movie'), TMDB.topRated('tv')]);
+        if ((a.results||[]).length) setHero(a.results[0]);
+        renderCarousel('fCarTopMov', a.results||[]); renderCarousel('fCarTopTvTop', b.results||[]);
+        attachCardClicks(main);
+      } catch(e) { toast('Erro ao carregar top avaliados.','error'); }
+    }
+  }
+
+  // ---- LOAD ALL (initial) ----
+  ['carTrending','carMovies','carSeries','carTop','carNew'].forEach(id => {
+    document.getElementById(id).innerHTML = skeletons(10);
+  });
+
+  try {
+    const [trending, movies, series, topMovies, nowPlaying] = await Promise.all([
+      TMDB.trending('all', 'week'),
+      TMDB.popular('movie'),
+      TMDB.popular('tv'),
+      TMDB.topRated('movie'),
+      TMDB.nowPlaying(),
+    ]);
+
+    const trendingItems = trending.results || [];
+    const movieItems    = movies.results  || [];
+    const seriesItems   = series.results  || [];
+    const topItems      = topMovies.results || [];
+    const newItems      = nowPlaying.results || [];
+
+    // Hero = primeiro trending
+    if (trendingItems.length) setHero(trendingItems[0]);
+
+    renderCarousel('carTrending', trendingItems);
+    renderCarousel('carMovies',   movieItems);
+    renderCarousel('carSeries',   seriesItems);
+    renderCarousel('carTop',      topItems);
+    renderCarousel('carNew',      newItems);
+
+    attachCardClicks(document.getElementById('mainContent'));
+
+    // ---- VER TUDO ----
+    const seeAllMap = {
+      'carTrending': { label: 'Em Alta',          items: trendingItems },
+      'carMovies':   { label: 'Filmes Populares',  items: movieItems },
+      'carSeries':   { label: 'Séries Populares',  items: seriesItems },
+      'carTop':      { label: 'Top Avaliados',     items: topItems },
+      'carNew':      { label: 'Lançamentos',       items: newItems },
+    };
+
+    document.querySelectorAll('.see-all').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const section = btn.closest('.content-section');
+        const carousel = section ? section.querySelector('.carousel') : null;
+        const carId = carousel ? carousel.id : null;
+        const data = carId ? seeAllMap[carId] : null;
+        if (!data) return;
+        const main = document.getElementById('mainContent');
+        main.innerHTML = `
+          <section class="content-section" style="padding-top:20px;">
+            <div class="section-header" style="margin-bottom:20px;">
+              <h2 class="section-title">${data.label}</h2>
+              <button onclick="location.reload()" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#b3b3b3;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.color='#fff';this.style.borderColor='#fff'" onmouseout="this.style.color='#b3b3b3';this.style.borderColor='rgba(255,255,255,0.3)'">← Voltar</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;" id="seeAllGrid"></div>
+          </section>`;
+        document.getElementById('seeAllGrid').innerHTML = data.items.map(createCard).join('');
+        attachCardClicks(document.getElementById('seeAllGrid'));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+  } catch(e) {
+    console.error('TMDB error:', e);
+    toast('Erro ao carregar conteúdo. Verifique sua conexão.', 'error');
+  }
+
+  // ---- RENDER CONTINUE WATCHING ----
+  renderContinueWatching();
+
+  // ---- NAV FILTER ----
+  document.querySelectorAll('.nav-links a[data-filter]').forEach(link => {
+    link.addEventListener('click', async (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      link.classList.add('active');
+      await loadFilter(link.dataset.filter);
+    });
+  });
+
+  // ---- DETAIL MODAL ----
+  let currentDetail = null;
+
+  window.openDetail = async (id, type) => {
+    const modal = document.getElementById('detailModal');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    // Reset
+    document.getElementById('detailTitle').textContent    = 'Carregando...';
+    document.getElementById('detailOverview').textContent = '';
+    document.getElementById('detailMeta').innerHTML       = '';
+    document.getElementById('detailInfo').innerHTML       = '';
+    document.getElementById('seasonsWrap').style.display  = 'none';
+    document.getElementById('detailBackdrop').src         = '';
+
+    try {
+      const data = await TMDB.details(type, id);
+      currentDetail = { ...data, _type: type };
+
+      const title   = data.title || data.name;
+      const yr      = year(data);
+      const rt      = rating(data);
+      const runtime = data.runtime ? `${data.runtime} min` : (data.episode_run_time?.[0] ? `${data.episode_run_time[0]} min/ep` : '');
+      const genres  = (data.genres || []).map(g => g.name).join(', ');
+      const cast    = (data.credits?.cast || []).slice(0, 5).map(c => c.name).join(', ');
+      const director = (data.credits?.crew || []).find(c => c.job === 'Director')?.name || '';
+
+      const bd = TMDB.backdrop(data.backdrop_path, 'w1280');
+      if (bd) document.getElementById('detailBackdrop').src = bd;
+
+      document.getElementById('detailTitle').textContent = title;
+      document.getElementById('detailMeta').innerHTML = `
+        <span class="match">✓ ${Math.round((data.vote_average||0)*10)}% relevante</span>
+        <span class="year">${yr}</span>
+        ${runtime ? `<span class="runtime">${runtime}</span>` : ''}
+        <span class="badge-hd">HD</span>`;
+
+      document.getElementById('detailOverview').textContent = data.overview || 'Sem descrição disponível.';
+
+      document.getElementById('detailInfo').innerHTML = `
+        ${genres  ? `<div><strong>Gêneros:</strong> ${genres}</div>` : ''}
+        ${cast    ? `<div><strong>Elenco:</strong> ${cast}</div>` : ''}
+        ${director? `<div><strong>Diretor:</strong> ${director}</div>` : ''}
+        <div><strong>Avaliação:</strong> <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" style="color:#f5c518;vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${rt} (${(data.vote_count||0).toLocaleString()} votos)</div>`;
+
+      document.getElementById('detailPlay').onclick = () => {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        handlePlay(id, type, title, 1, 1, data.poster_path || null, data.release_date || data.first_air_date || null);
+      };
+
+      // Seasons for TV
+      if (type === 'tv' && data.number_of_seasons) {
+        const wrap = document.getElementById('seasonsWrap');
+        wrap.style.display = 'block';
+        const tabs = document.getElementById('seasonTabs');
+        tabs.innerHTML = Array.from({length: data.number_of_seasons}, (_,i) => `
+          <button class="season-tab${i===0?' active':''}" data-season="${i+1}">T${i+1}</button>`).join('');
+
+        async function loadSeason(s) {
+          document.getElementById('episodesGrid').innerHTML = '<div style="color:var(--text-muted);padding:12px;">Carregando...</div>';
+          try {
+            const sd = await TMDB.seasons(id, s);
+            document.getElementById('episodesGrid').innerHTML = (sd.episodes||[]).map(ep => `
+              <div class="episode-card" onclick="handlePlay(${id},'tv','${title.replace(/'/g,"\\'")}',${s},${ep.episode_number},null,'${ep.air_date||''}')">
+                <div class="ep-num">T${s} · E${ep.episode_number}</div>
+                <div class="ep-name">${ep.name||'Episódio '+ep.episode_number}</div>
+                <div class="ep-date">${ep.air_date||''}</div>
+              </div>`).join('') || '<div style="color:var(--text-muted);padding:12px;">Sem episódios</div>';
+          } catch { document.getElementById('episodesGrid').innerHTML = '<div style="color:var(--text-muted);padding:12px;">Erro ao carregar</div>'; }
+        }
+
+        tabs.querySelectorAll('.season-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.querySelectorAll('.season-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            loadSeason(parseInt(tab.dataset.season));
+          });
+        });
+
+        loadSeason(1);
+      }
+
+    } catch(e) {
+      console.error(e);
+      toast('Erro ao carregar detalhes.', 'error');
+    }
+  };
+
+  document.getElementById('btnCloseDetail').addEventListener('click', () => {
+    document.getElementById('detailModal').classList.remove('show');
+    document.body.style.overflow = '';
+  });
+
+  document.getElementById('detailModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('detailModal')) {
+      document.getElementById('detailModal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.getElementById('detailAddList').addEventListener('click', () => toast('Adicionado à lista!', 'success'));
+
+  // ---- PLAYER ----
+  let playerData = null;
+
+  // ---- ANIMAÇÃO CINEMATOGRÁFICA ----
+  function playCinemaTransition(callback) {
+    const ct = document.getElementById('cinemaTransition');
+    ct.style.pointerEvents = 'all';
+    ct.classList.add('active');
+    setTimeout(() => { ct.classList.add('flash'); setTimeout(() => ct.classList.remove('flash'), 150); }, 400);
+    setTimeout(() => {
+      ct.classList.add('fade-out');
+      setTimeout(() => {
+        callback();
+        setTimeout(() => { ct.classList.remove('active', 'fade-out'); ct.style.pointerEvents = 'none'; }, 400);
+      }, 450);
+    }, 750);
+  }
+
+  // ---- PLAYER: tela cheia total com embedplay ----
+  window.openPlayer = async (id, type, title, season = 1, episode = 1, posterPath = null) => {
+    playerData = { id, type, title, season, episode };
+
+    // Salva progresso — busca poster via TMDB se não tiver
+    const progress = Math.floor(Math.random() * 80) + 10;
+    let posterUrl = posterPath ? TMDB.poster(posterPath) : null;
+
+    // Se não tem poster, tenta buscar do TMDB
+    if (!posterUrl) {
+      try {
+        const details = await TMDB.details(type === 'tv' ? 'tv' : 'movie', id);
+        if (details.poster_path) posterUrl = TMDB.poster(details.poster_path);
+      } catch(e) {}
+    }
+
+    Auth.saveProgress(activeProfile.id, {
+      id, type, title,
+      poster: posterUrl,
+      season, episode, progress,
+    });
+    renderContinueWatching();
+
+    playCinemaTransition(async () => {
+      const fs    = document.getElementById('playerFullscreen');
+      const bar   = document.getElementById('playerBar');
+      const epSel = document.getElementById('epSelect');
+      const iframe = document.getElementById('playerIframe');
+      const loading = document.getElementById('playerLoading');
+
+      // Abre tela cheia
+      fs.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      document.getElementById('playerTitle').textContent = title;
+      loading.style.display = 'flex';
+      iframe.style.opacity = '0';
+      iframe.src = '';
+
+      // Mostra barra ao mover o mouse
+      let barTimer;
+      fs.onmousemove = () => {
+        bar.style.opacity = '1';
+        bar.style.pointerEvents = 'all';
+        clearTimeout(barTimer);
+        barTimer = setTimeout(() => { bar.style.opacity = '0'; bar.style.pointerEvents = 'none'; }, 3000);
+      };
+      // Mostra barra imediatamente ao abrir
+      bar.style.opacity = '1';
+      bar.style.pointerEvents = 'all';
+      barTimer = setTimeout(() => { bar.style.opacity = '0'; bar.style.pointerEvents = 'none'; }, 4000);
+
+      // Para TV: seletor de episódios
+      if (type === 'tv') {
+        epSel.style.display = 'block';
+        try {
+          const sd = await TMDB.seasons(id, season);
+          epSel.innerHTML = (sd.episodes||[]).map(ep =>
+            `<option value="${ep.episode_number}" ${ep.episode_number===episode?'selected':''}
+              data-airdate="${ep.air_date||''}"
+            >T${season} E${ep.episode_number} — ${ep.name||'Ep '+ep.episode_number}</option>`
+          ).join('');
+          epSel.onchange = () => {
+            const selectedOpt = epSel.options[epSel.selectedIndex];
+            const airDate = selectedOpt.dataset.airdate || null;
+            const epNum = parseInt(epSel.value);
+            // Verifica bloqueio premium antes de trocar episódio
+            const lockInfo = Auth.isContentPremiumLocked(id, type, user.id, airDate);
+            if (lockInfo && lockInfo.locked) {
+              // Volta para o episódio atual
+              epSel.value = episode;
+              showPremiumModal(lockInfo.releaseDate, title);
+              return;
+            }
+            openPlayer(id, type, title, season, epNum);
+          };
+        } catch { epSel.style.display = 'none'; }
+      } else {
+        epSel.style.display = 'none';
+      }
+
+      // Busca IMDB ID
+      let imdbId = null;
+      try { imdbId = await TMDB.getImdbId(type === 'tv' ? 'tv' : 'movie', id); } catch(e) {}
+
+      if (!imdbId) {
+        loading.innerHTML = `<div style="text-align:center;color:#e87c03;font-family:'Helvetica Neue',Arial,sans-serif;">
+          <div style="font-size:2rem;margin-bottom:12px;">⚠️</div>
+          <div style="font-weight:700;margin-bottom:8px;">IMDB ID não encontrado</div>
+          <div style="font-size:0.82rem;color:#888;">Este conteúdo pode não estar disponível.</div>
+        </div>`;
+        return;
+      }
+
+      playerData.imdbId = imdbId;
+
+      // Monta URL do embedplay
+      let embedUrl;
+      if (type === 'tv') {
+        embedUrl = `https://www.embedplay.one/serie/${imdbId}/${season}/${episode}`;
+      } else {
+        embedUrl = `https://www.embedplay.one/filme/${imdbId}`;
+      }
+
+      iframe.src = embedUrl;
+      iframe.onload = () => { loading.style.display = 'none'; iframe.style.opacity = '1'; };
+      setTimeout(() => { loading.style.display = 'none'; iframe.style.opacity = '1'; }, 6000);
+
+      // ---- MONITOR: bloqueia botão "Mostrar Episódios" do embedplay para não-VIP ----
+      const blockLayer = document.getElementById('episodeBlockLayer');
+      if (type === 'tv' && !Auth.isPremium(user.id)) {
+        try {
+          const sd = await TMDB.seasons(id, season);
+          const hasBlocked = (sd.episodes || []).some(ep => {
+            if (!ep.air_date) return false;
+            const lockInfo = Auth.isContentPremiumLocked(id, type, user.id, ep.air_date);
+            return lockInfo && lockInfo.locked;
+          });
+          if (hasBlocked) {
+            // Ativa a camada sobre o botão "Mostrar Episódios"
+            blockLayer.style.display = 'block';
+            // Callback para mostrar modal premium ao clicar
+            window._premiumModalCallback = () => {
+              showPremiumModal(
+                new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+                title
+              );
+            };
+          } else {
+            blockLayer.style.display = 'none';
+          }
+        } catch(e) {
+          blockLayer.style.display = 'none';
+        }
+      } else {
+        blockLayer.style.display = 'none';
+      }
+    });
+  };
+
+  function closePlayer() {
+    const fs    = document.getElementById('playerFullscreen');
+    const iframe = document.getElementById('playerIframe');
+    fs.style.display = 'none';
+    iframe.src = '';
+    document.body.style.overflow = '';
+    document.getElementById('episodeBlockLayer').style.display = 'none';
+    document.getElementById('playerLoading').style.display = 'flex';
+    document.getElementById('playerLoading').innerHTML = `
+      <div style="width:44px;height:44px;border:3px solid rgba(229,9,20,0.15);border-top-color:#e50914;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      <span>Carregando player...</span>`;
+  }
+
+  document.getElementById('btnClosePlayer').addEventListener('click', closePlayer);
+
+  // ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closePlayer();
+      document.getElementById('detailModal').classList.remove('show');
+      closeSearch();
+      document.body.style.overflow = '';
+    }
+  });
+
+  // ---- SEARCH (Animated inline) ----
+  let searchTimer;
+  let searchOpen = false;
+
+  const searchInline = document.getElementById('searchInline');
+  const searchInlineInput = document.getElementById('searchInlineInput');
+  const searchDropdown = document.getElementById('searchDropdown');
+  const btnSearch = document.getElementById('btnSearch');
+
+  function openSearch() {
+    searchOpen = true;
+    searchInline.classList.add('open');
+    searchInlineInput.focus();
+  }
+
+  function closeSearch() {
+    searchOpen = false;
+    searchInline.classList.remove('open');
+    searchInlineInput.value = '';
+    searchDropdown.classList.remove('show');
+    document.getElementById('searchResults').innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;padding:16px;">Digite para buscar...</p>';
+  }
+
+  btnSearch.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (searchOpen) {
+      closeSearch();
+    } else {
+      openSearch();
+    }
+  });
+
+  searchInlineInput.addEventListener('click', (e) => e.stopPropagation());
+
+  document.addEventListener('click', (e) => {
+    if (searchOpen && !searchInline.contains(e.target) && !searchDropdown.contains(e.target)) {
+      closeSearch();
+    }
+  });
+
+  searchInlineInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    const q = e.target.value.trim();
+    if (!q) {
+      searchDropdown.classList.remove('show');
+      document.getElementById('searchResults').innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;padding:16px;">Digite para buscar...</p>';
+      return;
+    }
+    searchDropdown.classList.add('show');
+    document.getElementById('searchResults').innerHTML = skeletons(4);
+    searchTimer = setTimeout(async () => {
+      try {
+        const data = await TMDB.search(q);
+        const items = (data.results||[]).filter(i => i.media_type !== 'person' && (i.poster_path || i.backdrop_path));
+        if (!items.length) {
+          document.getElementById('searchResults').innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;padding:16px;">Nenhum resultado encontrado.</p>';
+          return;
+        }
+        document.getElementById('searchResults').innerHTML = items.slice(0, 8).map(createCard).join('');
+        document.querySelectorAll('#searchResults .card').forEach(card => {
+          card.addEventListener('click', () => {
+            closeSearch();
+            openDetail(card.dataset.id, card.dataset.type);
+          });
+        });
+      } catch { document.getElementById('searchResults').innerHTML = '<p style="color:var(--text-muted);padding:16px;">Erro na busca.</p>'; }
+    }, 400);
+  });
+
+});
+
+// Carousel scroll
+function scrollCar(btn, dir) {
+  const car = btn.parentElement.querySelector('.carousel');
+  car.scrollBy({ left: dir * 700, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

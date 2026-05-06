@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Impede cache da página protegida -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>CineFlix Hub — Painel Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <!-- Verificação de segurança — roda ANTES de qualquer conteúdo renderizar -->
+  <script>
+    (function() {
+      function getUser() {
+        try {
+          const d = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
+          return d ? JSON.parse(d) : null;
+        } catch(e) { return null; }
+      }
+      function getUsers() {
+        try {
+          const d = localStorage.getItem('sf_users');
+          return d ? JSON.parse(d) : [];
+        } catch(e) { return []; }
+      }
+      const user = getUser();
+      // Sem sessão → login
+      if (!user || !user.id || !user.role) {
+        window.location.replace('index.html');
+        document.documentElement.style.display = 'none';
+        throw new Error('Unauthorized');
+      }
+      // Não é admin → home
+      if (user.role !== 'admin') {
+        window.location.replace('home.html');
+        document.documentElement.style.display = 'none';
+        throw new Error('Forbidden');
+      }
+      // Verifica no storage se ainda é admin (evita manipulação do sessionStorage)
+      const users = getUsers();
+      const dbUser = users.find(u => u.id === user.id);
+      if (!dbUser || dbUser.role !== 'admin') {
+        sessionStorage.removeItem('sf_current_user');
+        localStorage.removeItem('sf_current_user');
+        window.location.replace('index.html');
+        document.documentElement.style.display = 'none';
+        throw new Error('Forbidden');
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <a href="home.html">CineFlix<span> Hub</span></a>
+      <small>Painel Admin</small>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <button class="nav-item" data-section="overview">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Visão Geral</span>
+        </button>
+        <button class="nav-item" data-section="content">
+          <span class="nav-icon">🎬</span>
+          <span class="nav-label">Conteúdo</span>
+        </button>
+        <button class="nav-item" data-section="users">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Usuários</span>
+          <span class="nav-badge" id="usersBadge">2</span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Conteúdo</div>
+        <button class="nav-item" data-section="movies">
+          <span class="nav-icon">🎥</span>
+          <span class="nav-label">Filmes</span>
+        </button>
+        <button class="nav-item" data-section="series">
+          <span class="nav-icon">📺</span>
+          <span class="nav-label">Séries</span>
+        </button>
+        <button class="nav-item" data-section="channels">
+          <span class="nav-icon">📡</span>
+          <span class="nav-label">Canais</span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Sistema</div>
+        <button class="nav-item" data-section="premium">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="color:#f5c518;">
+              <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/>
+            </svg>
+          </span>
+          <span class="nav-label">Premium</span>
+        </button>
+        <button class="nav-item" data-section="settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Configurações</span>
+        </button>
+        <a href="home.html" class="nav-item">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Ver Site</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarUserAvatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarUserName">Admin</div>
+        <div class="user-role" id="sidebarUserRole">Administrador</div>
+      </div>
+      <button class="btn-logout" id="btnLogout" title="Sair">⏻</button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main-content">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="btn-menu-toggle" id="btnMenuToggle">☰</button>
+        <span class="page-title" id="pageTitle">Visão Geral</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar..." />
+        </div>
+        <button class="btn-icon" title="Notificações" onclick="showToast('3 novas notificações', 'info')">
+          🔔
+          <span class="notif-dot"></span>
+        </button>
+        <button class="btn-icon" title="Ajuda" onclick="showToast('Central de ajuda em breve!', 'info')">❓</button>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
+
+      <!-- ===== OVERVIEW ===== -->
+      <section id="section-overview" class="section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon red">🎥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statMovies">0</div>
+              <div class="stat-label">Filmes</div>
+              <div class="stat-change up">↑ 12% este mês</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">📺</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statSeries">0</div>
+              <div class="stat-label">Séries</div>
+              <div class="stat-change up">↑ 8% este mês</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">📡</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statChannels">0</div>
+              <div class="stat-label">Canais ao Vivo</div>
+              <div class="stat-change up">↑ 2 novos</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statUsers">0</div>
+              <div class="stat-label">Usuários</div>
+              <div class="stat-change up">↑ 24% este mês</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">👁️</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statViews">0</div>
+              <div class="stat-label">Visualizações</div>
+              <div class="stat-change up">↑ 18% esta semana</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-grid">
+          <!-- Recent Content -->
+          <div class="dash-card">
+            <div class="card-header">
+              <h3>🎬 Conteúdo Recente</h3>
+              <div class="card-actions">
+                <button class="btn-sm ghost" onclick="document.querySelector('[data-section=content]').click()">Ver todos</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Views</th>
+                  </tr>
+                </thead>
+                <tbody id="recentContentBody">
+                  <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Activity -->
+          <div class="dash-card">
+            <div class="card-header">
+              <h3>⚡ Atividade Recente</h3>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div class="activity-text"><strong>Novo usuário</strong> se cadastrou na plataforma</div>
+                <div class="activity-time">2 min</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot blue"></div>
+                <div class="activity-text"><strong>Duna: Parte 2</strong> adicionado ao catálogo</div>
+                <div class="activity-time">15 min</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot orange"></div>
+                <div class="activity-text"><strong>ESPN</strong> canal ao vivo atualizado</div>
+                <div class="activity-time">1h</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot red"></div>
+                <div class="activity-text"><strong>Assinatura</strong> cancelada por usuário</div>
+                <div class="activity-time">2h</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div class="activity-text"><strong>Breaking Bad</strong> atingiu 150K views</div>
+                <div class="activity-time">3h</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot blue"></div>
+                <div class="activity-text"><strong>Backup</strong> do sistema concluído</div>
+                <div class="activity-time">6h</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Content -->
+        <div class="dash-card full">
+          <div class="card-header">
+            <h3>🏆 Top Conteúdo por Visualizações</h3>
+            <div class="card-actions">
+              <button class="btn-sm ghost">Exportar</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Gênero</th>
+                  <th>Avaliação</th>
+                  <th>Visualizações</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="topContentBody">
+                <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CONTENT MANAGER ===== -->
+      <section id="section-content" class="section">
+        <div class="content-toolbar">
+          <div class="search-input" style="max-width:280px;">
+            <span>🔍</span>
+            <input type="text" id="contentSearch" placeholder="Buscar conteúdo..." />
+          </div>
+          <select class="filter-select" id="contentFilter">
+            <option value="all">Todos os tipos</option>
+            <option value="filme">Filmes</option>
+            <option value="serie">Séries</option>
+            <option value="canal">Canais</option>
+          </select>
+          <button class="btn-sm primary" id="btnAddContent" style="margin-left:auto;">➕ Adicionar</button>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>🎬 Gerenciar Conteúdo</h3>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Gênero</th>
+                  <th>Status</th>
+                  <th>Views</th>
+                  <th>Rating</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="contentTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== MOVIES ===== -->
+      <section id="section-movies" class="section">
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>🎥 Filmes</h3>
+            <button class="btn-sm primary" onclick="document.querySelector('[data-section=content]').click()">Gerenciar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Título</th><th>Gênero</th><th>Ano</th><th>Status</th><th>Views</th><th>Rating</th></tr>
+              </thead>
+              <tbody id="moviesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SERIES ===== -->
+      <section id="section-series" class="section">
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>📺 Séries</h3>
+            <button class="btn-sm primary" onclick="document.querySelector('[data-section=content]').click()">Gerenciar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Título</th><th>Gênero</th><th>Ano</th><th>Status</th><th>Views</th><th>Rating</th></tr>
+              </thead>
+              <tbody id="seriesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CHANNELS ===== -->
+      <section id="section-channels" class="section">
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>📡 Canais ao Vivo</h3>
+            <button class="btn-sm primary" onclick="document.querySelector('[data-section=content]').click()">Gerenciar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Canal</th><th>Gênero</th><th>Ano</th><th>Status</th><th>Espectadores</th><th>Rating</th></tr>
+              </thead>
+              <tbody id="channelsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== USERS ===== -->
+      <section id="section-users" class="section">
+        <div class="users-toolbar">
+          <div class="search-input">
+            <span>🔍</span>
+            <input type="text" id="usersSearch" placeholder="Buscar usuários..." />
+          </div>
+          <button class="btn-sm primary" onclick="showToast('Funcionalidade em breve!', 'info')">➕ Novo Usuário</button>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>👥 Gerenciar Usuários</h3>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Perfil</th>
+                  <th>VIP</th>
+                  <th>Status</th>
+                  <th>Cadastro</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PREMIUM CONTENT ===== -->
+      <section id="section-premium" class="section">
+        <div class="dash-card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <h3>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="color:#f5c518;vertical-align:middle;margin-right:6px;">
+                <path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z" style="display:none"/>
+                <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/>
+              </svg>
+              Adicionar Conteúdo Premium
+            </h3>
+          </div>
+          <div class="modal-body" style="padding:20px 24px;">
+            <form id="premiumContentForm">
+              <div class="form-row">
+                <div class="form-field">
+                  <label>TMDB ID *</label>
+                  <input type="number" id="pcTmdbId" placeholder="Ex: 1396" required />
+                </div>
+                <div class="form-field">
+                  <label>Tipo *</label>
+                  <select id="pcType" required>
+                    <option value="movie">Filme</option>
+                    <option value="tv">Série</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Título (para exibição)</label>
+                  <input type="text" id="pcTitle" placeholder="Ex: Breaking Bad" />
+                </div>
+                <div class="form-field">
+                  <label>Data de Liberação *</label>
+                  <input type="datetime-local" id="pcReleaseDate" required />
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:4px;">
+                <button type="submit" class="btn-sm primary">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="vertical-align:middle;margin-right:4px;">
+                    <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/>
+                  </svg>
+                  Marcar como Premium
+                </button>
+                <button type="button" class="btn-sm ghost" onclick="document.getElementById('premiumContentForm').reset()">Limpar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="color:#f5c518;vertical-align:middle;margin-right:6px;">
+                <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/>
+              </svg>
+              Conteúdos Premium Cadastrados
+            </h3>
+            <div class="card-actions">
+              <span id="premiumCount" class="badge badge-gold">0 itens</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>TMDB ID</th>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Liberação</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="premiumContentBody">
+                <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">Nenhum conteúdo premium cadastrado</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SETTINGS ===== -->
+      <section id="section-settings" class="section">
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>🎬 Plataforma</h3>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Modo Manutenção</h4>
+                <p>Exibe página de manutenção para usuários</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Cadastros Abertos</h4>
+                <p>Permite novos cadastros na plataforma</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Período de Teste</h4>
+                <p>Habilita 30 dias grátis para novos usuários</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3>🔔 Notificações</h3>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>E-mail de Boas-vindas</h4>
+                <p>Envia e-mail ao novo cadastro</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Alertas de Sistema</h4>
+                <p>Notificações de erros e eventos críticos</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Newsletter</h4>
+                <p>Envio de novidades por e-mail</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3>🔒 Segurança</h3>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Autenticação 2FA</h4>
+                <p>Exige verificação em dois fatores</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Logs de Acesso</h4>
+                <p>Registra todos os acessos ao sistema</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Bloqueio por IP</h4>
+                <p>Bloqueia IPs suspeitos automaticamente</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3>🎨 Aparência</h3>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Modo Escuro</h4>
+                <p>Interface escura (padrão)</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Autoplay</h4>
+                <p>Reprodução automática do próximo episódio</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Qualidade Automática</h4>
+                <p>Ajusta qualidade conforme conexão</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;display:flex;gap:12px;">
+          <button class="btn-sm primary" onclick="showToast('Configurações salvas!', 'success')">💾 Salvar Configurações</button>
+          <button class="btn-sm ghost" onclick="showToast('Configurações restauradas!', 'info')">↺ Restaurar Padrões</button>
+        </div>
+      </section>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+
+  <!-- ===== MODAL: ADD/EDIT CONTENT ===== -->
+  <div id="contentModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="contentModalTitle">➕ Adicionar Conteúdo</h2>
+        <button class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="contentForm">
+          <div class="form-field">
+            <label>Título *</label>
+            <input type="text" id="fTitle" placeholder="Ex: Stranger Things" required />
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Tipo *</label>
+              <select id="fType" required>
+                <option value="filme">Filme</option>
+                <option value="serie">Série</option>
+                <option value="canal">Canal</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Ano *</label>
+              <input type="number" id="fYear" placeholder="2024" min="1900" max="2030" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Gênero</label>
+              <select id="fGenre">
+                <option>Ação</option>
+                <option>Aventura</option>
+                <option>Comédia</option>
+                <option>Drama</option>
+                <option>Esportes</option>
+                <option>Ficção Científica</option>
+                <option>Horror</option>
+                <option>Notícias</option>
+                <option>Romance</option>
+                <option>Suspense</option>
+                <option>Documentário</option>
+                <option>Animação</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Status</label>
+              <select id="fStatus">
+                <option value="ativo">Ativo</option>
+                <option value="ao vivo">Ao Vivo</option>
+                <option value="inativo">Inativo</option>
+                <option value="em breve">Em Breve</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Visualizações</label>
+              <input type="number" id="fViews" placeholder="0" min="0" />
+            </div>
+            <div class="form-field">
+              <label>Rating (0-5)</label>
+              <input type="number" id="fRating" placeholder="4.5" min="0" max="5" step="0.1" />
+            </div>
+          </div>
+          <div class="modal-footer" style="padding:0;border:none;margin-top:8px;">
+            <button type="button" class="btn-sm ghost modal-close">Cancelar</button>
+            <button type="submit" class="btn-sm primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST CONTAINER ===== -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    // Render sub-tables on section change
+    document.addEventListener('DOMContentLoaded', () => {
+      // Populated after dashboard.js loads
+    });
+  </script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    // Extra renders for sub-sections
+    document.addEventListener('DOMContentLoaded', () => {
+      const contentData = () => JSON.parse(localStorage.getItem('sf_content') || '[]');
+
+      function renderSubTable(tbodyId, type) {
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+        const data = contentData().filter(c => c.type === type);
+        tbody.innerHTML = data.map(item => `
+          <tr>
+            <td><strong>${item.title}</strong></td>
+            <td>${item.genre}</td>
+            <td>${item.year}</td>
+            <td><span class="badge ${item.status === 'ativo' ? 'badge-green' : item.status === 'ao vivo' ? 'badge-red' : 'badge-gray'}">${item.status}</span></td>
+            <td>${item.views.toLocaleString()}</td>
+            <td>⭐ ${item.rating}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">Nenhum item</td></tr>';
+      }
+
+      function renderOverviewTables() {
+        const data = contentData();
+
+        // Recent content (last 5)
+        const recent = [...data].slice(0, 5);
+        document.getElementById('recentContentBody').innerHTML = recent.map(item => `
+          <tr>
+            <td><strong>${item.title}</strong></td>
+            <td><span class="badge ${item.type === 'filme' ? 'badge-blue' : item.type === 'serie' ? 'badge-purple' : 'badge-orange'}">${item.type}</span></td>
+            <td><span class="badge ${item.status === 'ativo' ? 'badge-green' : item.status === 'ao vivo' ? 'badge-red' : 'badge-gray'}">${item.status}</span></td>
+            <td>${item.views.toLocaleString()}</td>
+          </tr>
+        `).join('');
+
+        // Top content by views
+        const top = [...data].sort((a, b) => b.views - a.views).slice(0, 8);
+        document.getElementById('topContentBody').innerHTML = top.map((item, i) => `
+          <tr>
+            <td><strong>${i + 1}</strong></td>
+            <td><strong>${item.title}</strong></td>
+            <td><span class="badge ${item.type === 'filme' ? 'badge-blue' : item.type === 'serie' ? 'badge-purple' : 'badge-orange'}">${item.type}</span></td>
+            <td>${item.genre}</td>
+            <td>⭐ ${item.rating}</td>
+            <td>${item.views.toLocaleString()}</td>
+            <td><span class="badge ${item.status === 'ativo' ? 'badge-green' : item.status === 'ao vivo' ? 'badge-red' : 'badge-gray'}">${item.status}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Render on section change
+      document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const s = btn.dataset.section;
+          if (s === 'movies')   renderSubTable('moviesTableBody', 'filme');
+          if (s === 'series')   renderSubTable('seriesTableBody', 'serie');
+          if (s === 'channels') renderSubTable('channelsTableBody', 'canal');
+          if (s === 'overview') renderOverviewTables();
+          if (s === 'premium')  { if (typeof renderPremiumContent === 'function') renderPremiumContent(); }
+        });
+      });
+
+      renderOverviewTables();
+    });
+  </script>
+</body>
+</html>

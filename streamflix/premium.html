@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>CineFlix Hub — Assinar Premium</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --red:#e50914; --gold:#f5c518; --gold2:#e6b800;
+      --bg:#0f0f0f; --card:#1a1a1a; --border:rgba(255,255,255,0.08);
+      --text:#fff; --muted:#737373; --secondary:#b3b3b3;
+    }
+    body{font-family:'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+    /* HEADER */
+    header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:20px 48px;border-bottom:1px solid var(--border);
+    }
+    .logo{font-size:1.8rem;font-weight:900;color:var(--red);text-decoration:none;letter-spacing:-0.5px;}
+    .logo span{color:#fff;}
+    .btn-back{
+      display:flex;align-items:center;gap:8px;
+      background:transparent;border:1px solid var(--border);
+      color:var(--secondary);padding:8px 18px;border-radius:6px;
+      font-size:0.88rem;cursor:pointer;transition:all 0.2s;text-decoration:none;
+    }
+    .btn-back:hover{border-color:rgba(255,255,255,0.3);color:#fff;}
+
+    /* HERO */
+    .hero{
+      text-align:center;padding:60px 20px 40px;
+      background:radial-gradient(ellipse at top, rgba(245,197,24,0.08) 0%, transparent 60%);
+    }
+    .crown{
+      width:80px;height:80px;border-radius:50%;
+      background:linear-gradient(135deg,rgba(245,197,24,0.2),rgba(230,184,0,0.1));
+      border:2px solid rgba(245,197,24,0.4);
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 20px;font-size:2.2rem;
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,197,24,0.3);}50%{box-shadow:0 0 0 16px rgba(245,197,24,0);}}
+    .hero h1{font-size:2.4rem;font-weight:900;margin-bottom:12px;}
+    .hero h1 span{background:linear-gradient(135deg,#f5c518,#e6b800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero p{color:var(--secondary);font-size:1rem;max-width:500px;margin:0 auto 40px;line-height:1.6;}
+
+    /* BENEFITS */
+    .benefits{
+      display:flex;justify-content:center;gap:32px;flex-wrap:wrap;
+      margin-bottom:48px;padding:0 20px;
+    }
+    .benefit{display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--secondary);}
+    .benefit svg{color:var(--gold);flex-shrink:0;}
+
+    /* PLANS */
+    .plans{
+      display:flex;justify-content:center;gap:20px;flex-wrap:wrap;
+      padding:0 20px;margin-bottom:48px;
+    }
+    .plan-card{
+      background:var(--card);border:2px solid var(--border);
+      border-radius:16px;padding:32px 28px;width:280px;
+      cursor:pointer;transition:all 0.2s;position:relative;
+      text-align:center;
+    }
+    .plan-card:hover{border-color:rgba(245,197,24,0.4);transform:translateY(-4px);}
+    .plan-card.selected{border-color:var(--gold);background:rgba(245,197,24,0.05);}
+    .plan-card.popular::before{
+      content:'MAIS POPULAR';
+      position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+      background:linear-gradient(135deg,#f5c518,#e6b800);
+      color:#000;font-size:0.65rem;font-weight:800;
+      padding:4px 14px;border-radius:20px;letter-spacing:1px;
+      white-space:nowrap;
+    }
+    .plan-name{font-size:1rem;font-weight:700;color:var(--secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+    .plan-price{font-size:2.8rem;font-weight:900;color:var(--gold);line-height:1;}
+    .plan-price sup{font-size:1.2rem;vertical-align:top;margin-top:8px;}
+    .plan-price sub{font-size:0.9rem;color:var(--secondary);font-weight:400;}
+    .plan-desc{font-size:0.82rem;color:var(--muted);margin-top:8px;}
+    .plan-save{
+      display:inline-block;margin-top:10px;
+      background:rgba(70,211,105,0.15);color:#46d369;
+      border:1px solid rgba(70,211,105,0.3);
+      padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+    }
+
+    /* PAYMENT SECTION */
+    #paymentSection{display:none;max-width:480px;margin:0 auto;padding:0 20px 60px;}
+
+    .pay-card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:16px;padding:32px;text-align:center;
+    }
+
+    .pay-title{font-size:1.2rem;font-weight:700;margin-bottom:6px;}
+    .pay-subtitle{color:var(--secondary);font-size:0.88rem;margin-bottom:24px;}
+
+    /* QR Code */
+    .qr-wrap{
+      background:#fff;border-radius:12px;
+      padding:16px;display:inline-block;margin-bottom:20px;
+    }
+    .qr-wrap img{width:200px;height:200px;display:block;}
+
+    .qr-loading{
+      width:200px;height:200px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:12px;color:var(--muted);font-size:0.85rem;
+    }
+    .spinner{
+      width:36px;height:36px;
+      border:3px solid rgba(245,197,24,0.15);
+      border-top-color:var(--gold);
+      border-radius:50%;animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* PIX copy */
+    .pix-copy-wrap{margin-bottom:20px;}
+    .pix-copy-label{font-size:0.78rem;color:var(--muted);margin-bottom:8px;}
+    .pix-copy-box{
+      display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,0.05);border:1px solid var(--border);
+      border-radius:8px;padding:10px 14px;
+    }
+    .pix-copy-text{
+      flex:1;font-size:0.72rem;color:var(--secondary);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+      font-family:monospace;
+    }
+    .btn-copy{
+      background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);
+      color:var(--gold);padding:6px 14px;border-radius:6px;
+      font-size:0.78rem;font-weight:700;cursor:pointer;
+      transition:all 0.15s;white-space:nowrap;flex-shrink:0;
+    }
+    .btn-copy:hover{background:rgba(245,197,24,0.25);}
+    .btn-copy.copied{background:rgba(70,211,105,0.15);border-color:rgba(70,211,105,0.3);color:#46d369;}
+
+    /* Status */
+    .status-bar{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      padding:12px 20px;border-radius:8px;font-size:0.88rem;font-weight:600;
+      margin-bottom:16px;
+    }
+    .status-bar.pending{background:rgba(245,197,24,0.1);border:1px solid rgba(245,197,24,0.2);color:var(--gold);}
+    .status-bar.approved{background:rgba(70,211,105,0.15);border:1px solid rgba(70,211,105,0.3);color:#46d369;}
+    .status-bar.rejected{background:rgba(229,9,20,0.1);border:1px solid rgba(229,9,20,0.2);color:#ff6b6b;}
+
+    .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .status-dot.pending{background:var(--gold);animation:blink 1.5s infinite;}
+    .status-dot.approved{background:#46d369;}
+    .status-dot.rejected{background:#ff6b6b;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+    .pay-timer{font-size:0.78rem;color:var(--muted);margin-bottom:20px;}
+
+    /* Success */
+    #successSection{display:none;text-align:center;padding:60px 20px;}
+    .success-icon{font-size:4rem;margin-bottom:20px;}
+    .success-title{font-size:2rem;font-weight:900;margin-bottom:12px;}
+    .success-title span{background:linear-gradient(135deg,#f5c518,#e6b800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .success-desc{color:var(--secondary);font-size:0.95rem;margin-bottom:32px;line-height:1.6;}
+    .btn-go-home{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:14px 32px;background:linear-gradient(135deg,#f5c518,#e6b800);
+      color:#000;border:none;border-radius:8px;font-size:1rem;font-weight:800;
+      cursor:pointer;text-decoration:none;transition:all 0.2s;
+    }
+    .btn-go-home:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,197,24,0.4);}
+
+    /* CTA */
+    .cta-wrap{text-align:center;padding:0 20px 20px;}
+    .btn-subscribe{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:16px 40px;
+      background:linear-gradient(135deg,#f5c518,#e6b800);
+      color:#000;border:none;border-radius:10px;
+      font-size:1.05rem;font-weight:800;cursor:pointer;
+      transition:all 0.2s;letter-spacing:0.3px;
+    }
+    .btn-subscribe:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,197,24,0.4);}
+    .btn-subscribe:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+
+    .secure-note{
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      font-size:0.78rem;color:var(--muted);margin-top:12px;
+    }
+
+    @media(max-width:600px){
+      header{padding:16px 20px;}
+      .hero{padding:40px 16px 28px;}
+      .hero h1{font-size:1.8rem;}
+      .plan-card{width:100%;max-width:320px;}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="home.html" class="logo">CineFlix<span> Hub</span></a>
+  <a href="home.html" class="btn-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Voltar
+  </a>
+</header>
+
+<!-- HERO -->
+<div class="hero" id="heroSection">
+  <div class="crown">👑</div>
+  <h1>Assine o <span>CineFlix VIP</span></h1>
+  <p>Acesse todos os lançamentos imediatamente, sem esperar os 3 dias de carência. Conteúdo exclusivo, sem restrições.</p>
+
+  <div class="benefits">
+    <div class="benefit">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/></svg>
+      Lançamentos no dia 1
+    </div>
+    <div class="benefit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      Sem restrições de conteúdo
+    </div>
+    <div class="benefit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Pagamento 100% seguro via PIX
+    </div>
+    <div class="benefit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      Ativação imediata após pagamento
+    </div>
+  </div>
+
+  <!-- PLANOS -->
+  <div class="plans" id="plansGrid">
+    <div class="plan-card selected" data-plan="monthly" onclick="selectPlan('monthly')">
+      <div class="plan-name">Mensal</div>
+      <div class="plan-price"><sup>R$</sup>19<sub>,90/mês</sub></div>
+      <div class="plan-desc">Cancele quando quiser</div>
+    </div>
+    <div class="plan-card popular" data-plan="yearly" onclick="selectPlan('yearly')">
+      <div class="plan-name">Anual</div>
+      <div class="plan-price"><sup>R$</sup>99<sub>,90/ano</sub></div>
+      <div class="plan-desc">R$ 8,32/mês</div>
+      <span class="plan-save">Economize 58%</span>
+    </div>
+  </div>
+
+  <div class="cta-wrap">
+    <button class="btn-subscribe" id="btnSubscribe" onclick="startPayment()">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+        <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/>
+      </svg>
+      Assinar com PIX
+    </button>
+    <div class="secure-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Pagamento seguro via Mercado Pago · PIX instantâneo
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT SECTION -->
+<div id="paymentSection">
+  <div class="pay-card">
+    <div class="pay-title" id="payTitle">Pague com PIX</div>
+    <div class="pay-subtitle" id="paySubtitle">Escaneie o QR code ou copie o código PIX</div>
+
+    <!-- Status -->
+    <div class="status-bar pending" id="statusBar">
+      <div class="status-dot pending" id="statusDot"></div>
+      <span id="statusText">Aguardando pagamento...</span>
+    </div>
+
+    <!-- QR Code -->
+    <div class="qr-wrap">
+      <div class="qr-loading" id="qrLoading">
+        <div class="spinner"></div>
+        <span>Gerando QR Code...</span>
+      </div>
+      <img id="qrImg" src="" alt="QR Code PIX" style="display:none;width:200px;height:200px;" />
+    </div>
+
+    <!-- Timer -->
+    <div class="pay-timer" id="payTimer">QR Code expira em <strong id="timerVal">10:00</strong></div>
+
+    <!-- Copia e Cola -->
+    <div class="pix-copy-wrap">
+      <div class="pix-copy-label">Ou copie o código PIX:</div>
+      <div class="pix-copy-box">
+        <div class="pix-copy-text" id="pixCode">Gerando...</div>
+        <button class="btn-copy" id="btnCopy" onclick="copyPix()">Copiar</button>
+      </div>
+    </div>
+
+    <button class="btn-back" style="width:100%;justify-content:center;margin-top:8px;" onclick="cancelPayment()">
+      ← Cancelar e voltar
+    </button>
+  </div>
+</div>
+
+<!-- SUCCESS SECTION -->
+<div id="successSection">
+  <div class="success-icon">🎉</div>
+  <h2 class="success-title">Bem-vindo ao <span>VIP!</span></h2>
+  <p class="success-desc">
+    Seu pagamento foi confirmado e o acesso VIP foi ativado na sua conta.<br>
+    Agora você pode assistir todos os lançamentos no dia 1!
+  </p>
+  <a href="home.html" class="btn-go-home">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    Começar a assistir
+  </a>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  // Proteção antes de renderizar
+  (function() {
+    try {
+      const d = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
+      if (!d) { window.location.replace('index.html'); document.documentElement.style.display='none'; throw 0; }
+      const u = JSON.parse(d);
+      if (!u || !u.id) { window.location.replace('index.html'); document.documentElement.style.display='none'; throw 0; }
+    } catch(e) { if(e!==0) window.location.replace('index.html'); }
+  })();
+
+  const user = Auth.requireAuth('index.html');
+  if (!user) throw new Error('Not authenticated');
+
+  let selectedPlan = 'monthly';
+  let currentPaymentId = null;
+  let pollTimer = null;
+  let expireTimer = null;
+  let pixCode = '';
+
+  // ---- SELECIONAR PLANO ----
+  function selectPlan(plan) {
+    selectedPlan = plan;
+    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+  }
+
+  // ---- INICIAR PAGAMENTO ----
+  async function startPayment() {
+    const btn = document.getElementById('btnSubscribe');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;"></div> Gerando PIX...';
+
+    try {
+      const res = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id:  user.id,
+          email:    user.email,
+          name:     user.name,
+          plan:     selectedPlan,
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      currentPaymentId = data.payment_id;
+      pixCode = data.qr_code;
+
+      // Mostra seção de pagamento
+      document.getElementById('heroSection').style.display = 'none';
+      document.getElementById('paymentSection').style.display = 'block';
+
+      document.getElementById('payTitle').textContent = data.title;
+      document.getElementById('paySubtitle').textContent = `R$ ${data.amount.toFixed(2).replace('.', ',')} — Pague via PIX`;
+      document.getElementById('pixCode').textContent = pixCode;
+
+      // QR Code via base64 ou gerado localmente
+      const qrImg = document.getElementById('qrImg');
+      const qrLoading = document.getElementById('qrLoading');
+
+      if (data.qr_base64) {
+        qrImg.src = `data:image/png;base64,${data.qr_base64}`;
+        qrImg.style.display = 'block';
+        qrLoading.style.display = 'none';
+      } else {
+        // Gera QR via API pública
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
+        qrImg.src = qrUrl;
+        qrImg.onload = () => { qrImg.style.display = 'block'; qrLoading.style.display = 'none'; };
+        qrImg.onerror = () => { qrLoading.innerHTML = '<span style="color:#888;font-size:0.8rem;">QR Code indisponível.<br>Use o código abaixo.</span>'; };
+      }
+
+      // Timer de expiração (10 min)
+      startExpireTimer(data.expires_in || 600);
+
+      // Polling de status
+      startPolling();
+
+    } catch(e) {
+      alert('Erro ao gerar PIX: ' + e.message);
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/></svg> Assinar com PIX';
+    }
+  }
+
+  // ---- POLLING DE STATUS ----
+  function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(checkStatus, 3000); // verifica a cada 3s
+  }
+
+  async function checkStatus() {
+    if (!currentPaymentId) return;
+    try {
+      const res  = await fetch(`/api/payment/status?id=${currentPaymentId}`);
+      const data = await res.json();
+
+      if (data.status === 'approved') {
+        clearInterval(pollTimer);
+        clearInterval(expireTimer);
+        activateVip(data);
+      } else if (data.status === 'rejected' || data.status === 'cancelled') {
+        clearInterval(pollTimer);
+        clearInterval(expireTimer);
+        showRejected();
+      }
+      // pending: continua polling
+    } catch(e) {
+      console.warn('Polling error:', e);
+    }
+  }
+
+  // ---- ATIVAR VIP ----
+  function activateVip(paymentData) {
+    // Ativa VIP na conta do usuário
+    Auth.setPremium(user.id, true);
+
+    // Atualiza a sessão atual
+    const session = Auth.getCurrentUser();
+    if (session) {
+      session.isPremium = true;
+      const storage = localStorage.getItem('sf_current_user') ? localStorage : sessionStorage;
+      storage.setItem('sf_current_user', JSON.stringify(session));
+    }
+
+    // Mostra tela de sucesso
+    document.getElementById('paymentSection').style.display = 'none';
+    document.getElementById('successSection').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showRejected() {
+    const bar  = document.getElementById('statusBar');
+    const dot  = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    bar.className  = 'status-bar rejected';
+    dot.className  = 'status-dot rejected';
+    text.textContent = 'Pagamento recusado ou cancelado.';
+  }
+
+  // ---- TIMER ----
+  function startExpireTimer(seconds) {
+    let remaining = seconds;
+    function update() {
+      const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
+      document.getElementById('timerVal').textContent = `${m}:${s}`;
+      if (remaining <= 0) {
+        clearInterval(expireTimer);
+        document.getElementById('timerVal').textContent = 'Expirado';
+        clearInterval(pollTimer);
+      }
+      remaining--;
+    }
+    update();
+    expireTimer = setInterval(update, 1000);
+  }
+
+  // ---- COPIAR PIX ----
+  function copyPix() {
+    if (!pixCode) return;
+    navigator.clipboard.writeText(pixCode).then(() => {
+      const btn = document.getElementById('btnCopy');
+      btn.textContent = '✓ Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2500);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = pixCode;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = document.getElementById('btnCopy');
+      btn.textContent = '✓ Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2500);
+    });
+  }
+
+  // ---- CANCELAR ----
+  function cancelPayment() {
+    clearInterval(pollTimer);
+    clearInterval(expireTimer);
+    currentPaymentId = null;
+    document.getElementById('paymentSection').style.display = 'none';
+    document.getElementById('heroSection').style.display = 'block';
+    const btn = document.getElementById('btnSubscribe');
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.5l-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/></svg> Assinar com PIX';
+  }
+
+  // Se já é VIP, mostra mensagem
+  if (Auth.isPremium(user.id)) {
+    document.getElementById('heroSection').innerHTML = `
+      <div class="crown">👑</div>
+      <h1>Você já é <span>VIP!</span></h1>
+      <p style="color:var(--secondary);margin-bottom:32px;">Sua conta já tem acesso premium ativo. Aproveite todos os lançamentos!</p>
+      <a href="home.html" class="btn-go-home">← Voltar ao início</a>
+    `;
+  }
+</script>
+</body>
+</html>

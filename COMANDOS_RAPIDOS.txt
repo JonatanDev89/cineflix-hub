@@ -1,0 +1,135 @@
+═══════════════════════════════════════════════════════════════
+🎬 CINEFLIX HUB - COMANDOS RÁPIDOS PARA DEPLOY
+═══════════════════════════════════════════════════════════════
+
+📋 PASSO 1: CONFIGURAR GIT (primeira vez)
+─────────────────────────────────────────────────────────────
+
+git config --global user.name "Seu Nome Aqui"
+git config --global user.email "seu-email@exemplo.com"
+
+
+📋 PASSO 2: INICIALIZAR REPOSITÓRIO
+─────────────────────────────────────────────────────────────
+
+git init
+git add .
+git commit -m "Initial commit: CineFlix Hub - Plataforma de streaming completa"
+
+
+📋 PASSO 3: CRIAR REPOSITÓRIO NO GITHUB
+─────────────────────────────────────────────────────────────
+
+1. Acesse: https://github.com/new
+2. Nome do repositório: cineflix-hub
+3. Deixe DESMARCADO "Initialize with README"
+4. Clique em "Create repository"
+
+
+📋 PASSO 4: CONECTAR COM GITHUB
+─────────────────────────────────────────────────────────────
+
+⚠️ IMPORTANTE: Substitua "SEU-USUARIO" pelo seu username do GitHub!
+
+git remote add origin https://github.com/SEU-USUARIO/cineflix-hub.git
+git branch -M main
+git push -u origin main
+
+
+📋 PASSO 5: DEPLOY NA RENDER
+─────────────────────────────────────────────────────────────
+
+1. Acesse: https://dashboard.render.com/
+2. Clique em "New +" → "Web Service"
+3. Conecte seu GitHub
+4. Selecione o repositório "cineflix-hub"
+5. Clique em "Connect"
+6. Configurações (já detectadas automaticamente):
+   - Name: cineflix-hub
+   - Environment: Python 3
+   - Build Command: pip install -r requirements.txt
+   - Start Command: python streamflix/proxy.py
+   - Plan: Free
+7. Clique em "Create Web Service"
+8. Aguarde 2-5 minutos
+9. Pronto! Seu site estará no ar! 🎉
+
+
+📋 COMANDOS PARA ATUALIZAÇÕES FUTURAS
+─────────────────────────────────────────────────────────────
+
+Sempre que fizer alterações no código:
+
+git add .
+git commit -m "Descrição da alteração"
+git push
+
+
+═══════════════════════════════════════════════════════════════
+✅ CREDENCIAIS DE TESTE
+═══════════════════════════════════════════════════════════════
+
+ADMIN:
+Email: admin@cineflix.com
+Senha: admin123
+
+USUÁRIO:
+Email: user@cineflix.com
+Senha: user123
+
+
+═══════════════════════════════════════════════════════════════
+🔧 CONFIGURAÇÕES OPCIONAIS
+═══════════════════════════════════════════════════════════════
+
+API TMDB (para catálogo de filmes):
+1. Crie conta em: https://www.themoviedb.org/
+2. Obtenha API Key em: Settings → API
+3. Edite: streamflix/js/tmdb.js
+4. Substitua a chave existente
+
+MERCADO PAGO (para pagamentos):
+1. Crie conta em: https://www.mercadopago.com.br/developers
+2. Obtenha Access Token de produção
+3. Edite: streamflix/proxy.py
+4. Substitua a variável MP_TOKEN
+
+
+═══════════════════════════════════════════════════════════════
+📞 LINKS ÚTEIS
+═══════════════════════════════════════════════════════════════
+
+GitHub: https://github.com
+Render: https://render.com
+TMDB: https://www.themoviedb.org
+Mercado Pago: https://www.mercadopago.com.br/developers
+Git Download: https://git-scm.com/
+
+
+═══════════════════════════════════════════════════════════════
+🆘 PROBLEMAS COMUNS
+═══════════════════════════════════════════════════════════════
+
+❌ "Author identity unknown"
+   → Configure git config com seu nome e email (Passo 1)
+
+❌ "Permission denied"
+   → Use Personal Access Token do GitHub como senha
+   → GitHub → Settings → Developer settings → Personal access tokens
+
+❌ "Build failed" na Render
+   → Verifique os logs no dashboard da Render
+   → Certifique-se que todos os arquivos foram commitados
+
+❌ Site não carrega
+   → Aguarde 30-60 segundos no primeiro acesso (plano free)
+   → Verifique logs na Render
+
+
+═══════════════════════════════════════════════════════════════
+
+✨ Pronto! Siga os passos acima e seu CineFlix Hub estará online!
+
+📖 Para mais detalhes, veja: DEPLOY_GUIDE.md
+
+═══════════════════════════════════════════════════════════════

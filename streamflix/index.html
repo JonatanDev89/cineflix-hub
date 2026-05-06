@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineFlix Hub — Filmes, Séries e Canais</title>
+  <meta name="description" content="Assista filmes, séries e canais ao vivo com qualidade HD. Cadastre-se grátis." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="stylesheet" href="css/login.css" />
+</head>
+<body>
+
+  <!-- ===== BACKGROUND ===== -->
+  <div class="login-bg"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="login-header">
+    <a href="index.html" class="logo">CineFlix<span> Hub</span></a>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="login-container">
+    <div class="login-card">
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Entrar</button>
+        <button class="auth-tab" data-tab="register">Criar conta</button>
+      </div>
+
+      <!-- ===== LOGIN FORM ===== -->
+      <form id="loginForm" novalidate>
+        <div id="loginAlert" class="alert" role="alert"></div>
+
+        <div class="form-group">
+          <input type="email" id="loginEmail" placeholder=" " autocomplete="email" required />
+          <label for="loginEmail">E-mail</label>
+          <span class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+          <input type="password" id="loginPassword" placeholder=" " autocomplete="current-password" required />
+          <label for="loginPassword">Senha</label>
+          <button type="button" class="toggle-password" aria-label="Mostrar senha">MOSTRAR</button>
+          <span class="field-error"></span>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberMe" />
+            Lembrar de mim
+          </label>
+          <a href="#" class="forgot-link" data-modal="forgotModal">Esqueceu a senha?</a>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span class="btn-text">Entrar</span>
+          <div class="spinner"></div>
+        </button>
+
+        <div class="divider">ou continue com</div>
+
+        <div class="social-buttons">
+          <button type="button" class="btn-social" onclick="alert('Login social em breve!')">
+            <!-- Google Icon -->
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continuar com Google
+          </button>
+          <button type="button" class="btn-social" onclick="alert('Login social em breve!')">
+            <!-- Facebook Icon -->
+            <svg viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            Continuar com Facebook
+          </button>
+        </div>
+
+        <p class="terms-note">
+          Ao entrar, você concorda com nossos
+          <a href="#" data-modal="termsModal">Termos de Uso</a> e
+          <a href="#" data-modal="privacyModal">Política de Privacidade</a>.
+        </p>
+      </form>
+
+      <!-- ===== REGISTER FORM ===== -->
+      <form id="registerForm" style="display:none;" novalidate>
+        <div id="registerAlert" class="alert" role="alert"></div>
+
+        <div class="form-group">
+          <input type="text" id="regName" placeholder=" " autocomplete="name" required />
+          <label for="regName">Nome completo</label>
+          <span class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+          <input type="email" id="regEmail" placeholder=" " autocomplete="email" required />
+          <label for="regEmail">E-mail</label>
+          <span class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+          <input type="password" id="regPassword" placeholder=" " autocomplete="new-password" required />
+          <label for="regPassword">Senha (mín. 6 caracteres)</label>
+          <button type="button" class="toggle-password" aria-label="Mostrar senha">MOSTRAR</button>
+          <span class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+          <input type="password" id="regConfirm" placeholder=" " autocomplete="new-password" required />
+          <label for="regConfirm">Confirmar senha</label>
+          <button type="button" class="toggle-password" aria-label="Mostrar senha">MOSTRAR</button>
+          <span class="field-error"></span>
+        </div>
+
+        <div class="form-options" style="margin-bottom:20px;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="acceptTerms" required />
+            Aceito os <a href="#" data-modal="termsModal" style="color:#fff;margin:0 3px;">Termos de Uso</a> e a
+            <a href="#" data-modal="privacyModal" style="color:#fff;margin:0 3px;">Política de Privacidade</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span class="btn-text">Criar conta grátis</span>
+          <div class="spinner"></div>
+        </button>
+
+        <p class="login-footer-text" style="margin-top:16px;">
+          Já tem conta? <a href="#" onclick="document.querySelector('[data-tab=login]').click();return false;">Entrar</a>
+        </p>
+      </form>
+
+    </div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="page-footer">
+    <p>Dúvidas? Ligue <strong>0800 591 1234</strong></p>
+    <div class="footer-links">
+      <a href="#" data-modal="termsModal">Termos de Uso</a>
+      <a href="#" data-modal="privacyModal">Privacidade</a>
+      <a href="#" data-modal="cookieModal">Preferências de Cookies</a>
+      <a href="#">Ajuda</a>
+      <a href="#">Imprensa</a>
+      <a href="#">Empregos</a>
+      <a href="#">Contato</a>
+    </div>
+    <p>CineFlix Hub Brasil &copy; 2026</p>
+  </footer>
+
+  <!-- ===== COOKIE BANNER ===== -->
+  <div id="cookieBanner" class="cookie-banner" role="region" aria-label="Aviso de cookies">
+    <div class="cookie-content">
+      <h3>🍪 Usamos cookies</h3>
+      <p>
+        Utilizamos cookies e tecnologias similares para melhorar sua experiência, personalizar conteúdo e anúncios,
+        analisar o tráfego e entender como você usa nosso serviço. Saiba mais em nossa
+        <a href="#" data-modal="privacyModal">Política de Privacidade</a>.
+      </p>
+    </div>
+    <div class="cookie-actions">
+      <button id="btnCookieSettings" class="btn-cookie-settings">Personalizar</button>
+      <button id="btnAcceptAll" class="btn-cookie-accept">Aceitar todos</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: COOKIE SETTINGS ===== -->
+  <div id="cookieModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="cookieModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="cookieModalTitle">🍪 Preferências de Cookies</h2>
+        <button class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Gerencie suas preferências de cookies. Cookies necessários não podem ser desativados pois são essenciais para o funcionamento do site.</p>
+
+        <div class="cookie-toggle-list">
+          <div class="cookie-toggle-item">
+            <div class="cookie-toggle-info">
+              <h4>Necessários</h4>
+              <p>Essenciais para autenticação, segurança e funcionamento básico do site.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" checked disabled />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="cookie-toggle-item">
+            <div class="cookie-toggle-info">
+              <h4>Analíticos</h4>
+              <p>Nos ajudam a entender como você usa o site para melhorar a experiência.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cookieAnalytics" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="cookie-toggle-item">
+            <div class="cookie-toggle-info">
+              <h4>Marketing</h4>
+              <p>Usados para exibir anúncios relevantes com base nos seus interesses.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cookieMarketing" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="cookie-toggle-item">
+            <div class="cookie-toggle-info">
+              <h4>Preferências</h4>
+              <p>Lembram suas configurações como idioma, qualidade de vídeo e perfil.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cookiePreferences" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnSaveCookies" class="btn-cookie-settings">Salvar preferências</button>
+        <button id="btnAcceptAllModal" class="btn-cookie-accept">Aceitar todos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: TERMOS DE USO ===== -->
+  <div id="termsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="termsModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="termsModalTitle">📄 Termos de Uso</h2>
+        <button class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>1. Aceitação dos Termos</h3>
+        <p>Ao acessar ou usar o CineFlix Hub, você concorda em cumprir estes Termos de Uso. Se não concordar, não utilize o serviço.</p>
+
+        <h3>2. Descrição do Serviço</h3>
+        <p>O CineFlix Hub é uma plataforma de streaming que oferece acesso a filmes, séries, documentários e canais ao vivo mediante assinatura.</p>
+
+        <h3>3. Conta de Usuário</h3>
+        <ul>
+          <li>Você é responsável por manter a confidencialidade de sua senha.</li>
+          <li>Cada conta é pessoal e intransferível.</li>
+          <li>Notifique-nos imediatamente sobre uso não autorizado da sua conta.</li>
+        </ul>
+
+        <h3>4. Uso Permitido</h3>
+        <p>O conteúdo é licenciado para uso pessoal e não comercial. É proibido:</p>
+        <ul>
+          <li>Reproduzir, distribuir ou transmitir o conteúdo publicamente.</li>
+          <li>Usar ferramentas de captura de tela ou gravação não autorizadas.</li>
+          <li>Compartilhar credenciais de acesso com terceiros.</li>
+        </ul>
+
+        <h3>5. Pagamentos e Cancelamento</h3>
+        <p>As assinaturas são cobradas mensalmente. Você pode cancelar a qualquer momento, com acesso mantido até o fim do período pago.</p>
+
+        <h3>6. Limitação de Responsabilidade</h3>
+        <p>O CineFlix Hub não se responsabiliza por interrupções temporárias do serviço, falhas de conexão ou conteúdo de terceiros.</p>
+
+        <h3>7. Alterações nos Termos</h3>
+        <p>Reservamo-nos o direito de modificar estes termos a qualquer momento, com notificação prévia de 30 dias.</p>
+
+        <h3>8. Contato</h3>
+        <p>Para dúvidas: <strong>suporte@cineflixhub.com</strong></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cookie-accept modal-close">Entendi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: PRIVACIDADE ===== -->
+  <div id="privacyModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="privacyModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="privacyModalTitle">🔒 Política de Privacidade</h2>
+        <button class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>1. Dados que Coletamos</h3>
+        <ul>
+          <li><strong>Dados de cadastro:</strong> nome, e-mail, senha (criptografada).</li>
+          <li><strong>Dados de uso:</strong> histórico de visualização, buscas, preferências.</li>
+          <li><strong>Dados técnicos:</strong> endereço IP, tipo de dispositivo, navegador.</li>
+        </ul>
+
+        <h3>2. Como Usamos seus Dados</h3>
+        <ul>
+          <li>Fornecer e personalizar o serviço de streaming.</li>
+          <li>Processar pagamentos e gerenciar assinaturas.</li>
+          <li>Enviar comunicações sobre o serviço (com seu consentimento).</li>
+          <li>Melhorar nossos algoritmos de recomendação.</li>
+        </ul>
+
+        <h3>3. Compartilhamento de Dados</h3>
+        <p>Não vendemos seus dados pessoais. Podemos compartilhar com:</p>
+        <ul>
+          <li>Parceiros de pagamento (processamento seguro).</li>
+          <li>Provedores de análise (dados anonimizados).</li>
+          <li>Autoridades legais quando exigido por lei.</li>
+        </ul>
+
+        <h3>4. Seus Direitos (LGPD)</h3>
+        <ul>
+          <li>Acessar, corrigir ou excluir seus dados pessoais.</li>
+          <li>Revogar consentimento a qualquer momento.</li>
+          <li>Solicitar portabilidade dos seus dados.</li>
+          <li>Opor-se ao tratamento de dados para fins de marketing.</li>
+        </ul>
+
+        <h3>5. Segurança</h3>
+        <p>Utilizamos criptografia SSL/TLS, autenticação de dois fatores e monitoramento contínuo para proteger seus dados.</p>
+
+        <h3>6. Retenção de Dados</h3>
+        <p>Mantemos seus dados enquanto sua conta estiver ativa. Após cancelamento, os dados são excluídos em até 90 dias.</p>
+
+        <h3>7. Contato DPO</h3>
+        <p>Encarregado de Proteção de Dados: <strong>privacidade@cineflixhub.com</strong></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cookie-accept modal-close">Entendi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: ESQUECI SENHA ===== -->
+  <div id="forgotModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="forgotModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="forgotModalTitle">🔑 Recuperar Senha</h2>
+        <button class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:20px;">Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.</p>
+        <div class="form-group">
+          <input type="email" id="forgotEmail" placeholder=" " />
+          <label for="forgotEmail">E-mail cadastrado</label>
+        </div>
+        <div id="forgotAlert" class="alert" style="margin-top:12px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cookie-settings modal-close" data-close-modal>Cancelar</button>
+        <button class="btn-cookie-accept" onclick="
+          const email = document.getElementById('forgotEmail').value;
+          const alert = document.getElementById('forgotAlert');
+          if(!email) { alert.className='alert alert-error show'; alert.textContent='Digite seu e-mail.'; return; }
+          alert.className='alert alert-success show';
+          alert.textContent='✓ Se este e-mail estiver cadastrado, você receberá as instruções em breve.';
+          document.getElementById('forgotEmail').value='';
+        ">Enviar link</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+  <script>
+    (function() {
+      try {
+        // Marca de versão — se não existe, é primeira vez ou storage antigo
+        const version = localStorage.getItem('cf_version');
+        if (version !== '2.0') {
+          // Limpa tudo e marca a nova versão
+          localStorage.clear();
+          sessionStorage.clear();
+          localStorage.setItem('cf_version', '2.0');
+          console.log('[CineFlix] Storage resetado para versão 2.0');
+        }
+      } catch(e) {}
+    })();
+  </script>
+</body>
+</html>

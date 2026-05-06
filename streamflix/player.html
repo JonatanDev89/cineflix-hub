@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>CineFlix Hub Player</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Helvetica Neue',Arial,sans-serif;color:#fff;}
+
+    /* ===== LOADING ===== */
+    #loading{
+      position:fixed;inset:0;background:#000;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:200;
+    }
+    .logo{font-size:2rem;font-weight:900;color:#e50914;letter-spacing:-1px;}
+    .logo span{color:#fff;}
+    .spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,0.08);border-top-color:#e50914;border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    #loadSub{font-size:0.82rem;color:#555;}
+
+    /* ===== PLAYER ===== */
+    #playerWrap{
+      position:fixed;inset:0;background:#000;
+      display:none;
+    }
+    #playerWrap.show{display:block;}
+
+    iframe#mainFrame{
+      width:100%;height:100%;border:none;display:block;
+    }
+
+    /* ===== CONTROLS OVERLAY ===== */
+    #controls{
+      position:fixed;bottom:0;left:0;right:0;z-index:100;
+      background:linear-gradient(transparent,rgba(0,0,0,0.85));
+      padding:12px 20px 16px;
+      opacity:0;
+      transition:opacity 0.3s;
+      pointer-events:none;
+    }
+    #controls.visible{opacity:1;pointer-events:all;}
+
+    .ctrl-top{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:10px;
+    }
+
+    .ctrl-title{font-size:0.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;}
+
+    .ctrl-sources{display:flex;gap:6px;flex-wrap:wrap;}
+    .src-btn{
+      padding:4px 12px;border-radius:20px;
+      border:1px solid rgba(255,255,255,0.25);
+      background:rgba(255,255,255,0.08);
+      color:#ccc;font-size:0.72rem;font-weight:700;
+      cursor:pointer;transition:all 0.15s;
+    }
+    .src-btn:hover{background:rgba(255,255,255,0.18);color:#fff;}
+    .src-btn.active{background:#e50914;border-color:#e50914;color:#fff;}
+
+    .ctrl-bottom{display:flex;align-items:center;gap:14px;}
+
+    .ctrl-btn{
+      background:none;border:none;color:#fff;
+      font-size:1.1rem;cursor:pointer;padding:4px;
+      transition:opacity 0.15s;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .ctrl-btn:hover{opacity:0.7;}
+
+    /* Back button */
+    #btnBack{
+      position:fixed;top:14px;left:14px;z-index:150;
+      background:rgba(229,9,20,0.9);border:none;color:#fff;
+      padding:7px 14px;border-radius:6px;
+      font-size:0.78rem;font-weight:700;cursor:pointer;
+      display:none;align-items:center;gap:6px;
+    }
+    #btnBack.show{display:flex;}
+    #btnBack:hover{background:#e50914;}
+
+    /* ===== ERROR ===== */
+    #errMsg{
+      position:fixed;inset:0;background:#000;
+      display:none;flex-direction:column;align-items:center;justify-content:center;
+      gap:14px;z-index:300;padding:24px;text-align:center;
+    }
+    #errMsg h2{color:#e50914;font-size:1.2rem;}
+    #errMsg p{color:#666;font-size:0.85rem;max-width:360px;line-height:1.6;}
+    #errMsg .btns{display:flex;gap:10px;margin-top:4px;}
+    #errMsg button{padding:10px 24px;background:#e50914;color:#fff;border:none;border-radius:6px;font-size:0.88rem;font-weight:700;cursor:pointer;}
+    #errMsg button.ghost{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);}
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="logo">Stream<span>Flix</span></div>
+  <div class="spinner"></div>
+  <div id="loadSub">Carregando player...</div>
+</div>
+
+<div id="playerWrap">
+  <iframe id="mainFrame" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
+</div>
+
+<!-- Controles sobrepostos -->
+<div id="controls">
+  <div class="ctrl-top">
+    <div class="ctrl-title" id="ctrlTitle"></div>
+    <div class="ctrl-sources" id="ctrlSources"></div>
+  </div>
+</div>
+
+<button id="btnBack">← Voltar</button>
+
+<div id="errMsg">
+  <h2 style="color:#f5c518;">👑 Conteúdo VIP</h2>
+  <p id="errDetail">Este episódio é exclusivo para assinantes VIP.</p>
+  <div class="btns">
+    <button onclick="history.back()">← Voltar</button>
+    <button class="ghost" onclick="location.reload()">↺ Tentar novamente</button>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+window.open = () => null;
+
+const params  = new URLSearchParams(window.location.search);
+const imdb    = params.get('imdb')  || '';
+const tmdb    = params.get('tmdb')  || '';
+const type    = params.get('type')  || 'movie';
+const season  = params.get('s')     || '1';
+const ep      = params.get('e')     || '1';
+const title   = decodeURIComponent(params.get('title') || 'Reproduzindo...');
+
+document.title = title + ' — CineFlix Hub';
+document.getElementById('ctrlTitle').textContent = title;
+
+// ===== Fontes disponíveis (sem propaganda, sem API key) =====
+function buildSources() {
+  const id = imdb || tmdb;
+  if (!id) return [];
+
+  const isTV = type === 'tv';
+  const sources = [];
+
+  // vidsrc.mov — 1080p, sem ads, IMDB/TMDB
+  if (isTV) {
+    sources.push({ name: 'VidSrc',    url: `https://vidsrc.mov/embed/tv/${id}/${season}/${ep}` });
+    sources.push({ name: 'VidSrc.me', url: `https://vidsrc.me/embed/tv?imdb=${imdb || ''}&season=${season}&episode=${ep}` });
+    sources.push({ name: 'VidSrc.to', url: `https://vidsrc.to/embed/tv/${id}/${season}/${ep}` });
+    sources.push({ name: 'SuperEmbed',url: `https://multiembed.mov/?video_id=${tmdb || imdb}&tmdb=${tmdb?1:0}&s=${season}&e=${ep}` });
+    sources.push({ name: 'SmashyStream', url: `https://player.smashy.stream/tv/${id}?s=${season}&e=${ep}` });
+  } else {
+    sources.push({ name: 'VidSrc',    url: `https://vidsrc.mov/embed/movie/${id}` });
+    sources.push({ name: 'VidSrc.me', url: `https://vidsrc.me/embed/movie?imdb=${imdb || ''}` });
+    sources.push({ name: 'VidSrc.to', url: `https://vidsrc.to/embed/movie/${id}` });
+    sources.push({ name: 'SuperEmbed',url: `https://multiembed.mov/?video_id=${tmdb || imdb}&tmdb=${tmdb?1:0}` });
+    sources.push({ name: 'SmashyStream', url: `https://player.smashy.stream/movie/${id}` });
+  }
+
+  // Remove fontes com ID vazio
+  return sources.filter(s => !s.url.includes('undefined') && !s.url.includes('?imdb=&') && !s.url.includes('/embed/movie/&'));
+}
+
+const sources = buildSources();
+let currentIdx = 0;
+
+function loadSource(idx) {
+  if (idx < 0 || idx >= sources.length) {
+    showError('Nenhuma fonte disponível para este conteúdo.');
+    return;
+  }
+
+  currentIdx = idx;
+  const src = sources[idx];
+
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('loadSub').textContent = `Carregando ${src.name}...`;
+  document.getElementById('playerWrap').classList.remove('show');
+
+  const frame = document.getElementById('mainFrame');
+  frame.src = '';
+
+  setTimeout(() => {
+    frame.src = src.url;
+  }, 100);
+
+  // Renderiza botões de fonte
+  const container = document.getElementById('ctrlSources');
+  container.innerHTML = sources.map((s, i) =>
+    `<button class="src-btn${i===idx?' active':''}" onclick="loadSource(${i})">${s.name}</button>`
+  ).join('');
+
+  // Esconde loading após timeout
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('playerWrap').classList.add('show');
+    document.getElementById('btnBack').classList.add('show');
+  }, 3000);
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('playerWrap').classList.remove('show');
+  document.getElementById('errMsg').style.display = 'flex';
+  document.getElementById('errDetail').textContent = msg;
+}
+
+// Mostra/esconde controles ao mover o mouse
+let hideTimer;
+document.addEventListener('mousemove', () => {
+  document.getElementById('controls').classList.add('visible');
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => {
+    document.getElementById('controls').classList.remove('visible');
+  }, 3000);
+});
+
+// Botão voltar
+document.getElementById('btnBack').addEventListener('click', () => {
+  document.getElementById('mainFrame').src = '';
+  history.back();
+});
+
+// ESC fecha
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') history.back();
+});
+
+// Init
+if (!imdb && !tmdb) {
+  showError('ID do conteúdo não encontrado.');
+} else if (sources.length === 0) {
+  showError('Nenhuma fonte disponível.');
+} else {
+  // Verifica bloqueio premium via TMDB (busca data de lançamento do episódio)
+  async function checkAndLoad() {
+    // Para séries, busca a data de lançamento do episódio específico
+    if (type === 'tv' && (imdb || tmdb)) {
+      try {
+        const tmdbId = tmdb || imdb;
+        const apiKey = '8265bd1679663a7ea12ac168da84d2e8';
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${season}/episode/${ep}?api_key=${apiKey}`);
+        if (res.ok) {
+          const data = await res.json();
+          const airDate = data.air_date || null;
+          if (airDate) {
+            // Verifica bloqueio
+            const user = Auth.getCurrentUser();
+            const userId = user ? user.id : null;
+            const lockInfo = Auth.isContentPremiumLocked(tmdbId, type, userId, airDate);
+            if (lockInfo && lockInfo.locked) {
+              // Bloqueado — redireciona para home com mensagem
+              showError('Este episódio é exclusivo para assinantes VIP por mais alguns dias. Assine o Premium para assistir agora!');
+              return;
+            }
+          }
+        }
+      } catch(e) {
+        // Se falhar a verificação, deixa passar (não bloqueia por erro de rede)
+      }
+    }
+    loadSource(0);
+  }
+  checkAndLoad();
+}
+</script>
+</body>
+</html>

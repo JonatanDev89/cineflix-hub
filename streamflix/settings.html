@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineFlix Hub — Configurações do Perfil</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="stylesheet" href="css/settings.css" />
+  <script>
+    (function() {
+      try {
+        const d = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
+        if (!d) { window.location.replace('index.html'); document.documentElement.style.display='none'; throw 0; }
+        const u = JSON.parse(d);
+        if (!u || !u.id) { window.location.replace('index.html'); document.documentElement.style.display='none'; throw 0; }
+      } catch(e) { if(e!==0) window.location.replace('index.html'); }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="settings-header">
+    <a href="profiles.html" class="logo">CineFlix<span> Hub</span></a>
+    <a href="profiles.html" class="btn-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Voltar aos Perfis
+    </a>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="settings-main">
+    <h1 class="settings-page-title">Configurações do Perfil</h1>
+    <p class="settings-page-subtitle">Personalize seu perfil de visualização</p>
+
+    <!-- Preview do perfil atual -->
+    <div class="profile-preview" id="profilePreview">
+      <div class="preview-avatar" id="previewAvatar"></div>
+      <div class="preview-info">
+        <h3 id="previewName">Carregando...</h3>
+        <p id="previewEmail"></p>
+        <div class="preview-badges" id="previewBadges"></div>
+      </div>
+    </div>
+
+    <!-- ===== NOME ===== -->
+    <div class="settings-section">
+      <div class="settings-section-title">Informações do Perfil</div>
+      <div class="form-field">
+        <label for="profileName">Nome do Perfil</label>
+        <input type="text" id="profileName" placeholder="Nome do perfil" maxlength="30" />
+        <div class="hint">Máximo de 30 caracteres</div>
+      </div>
+    </div>
+
+    <!-- ===== AVATAR ===== -->
+    <div class="settings-section">
+      <div class="settings-section-title">Avatar</div>
+      <div class="avatar-picker-label">Escolha um avatar para o seu perfil</div>
+      <div class="avatar-grid" id="avatarGrid">
+        <!-- Renderizado via JS -->
+      </div>
+    </div>
+
+    <!-- ===== PIN ===== -->
+    <div class="settings-section">
+      <div class="settings-section-title">Segurança</div>
+      <div class="pin-section">
+        <div class="pin-section-header">
+          <div>
+            <h4>PIN de Acesso</h4>
+            <p>Proteja este perfil com um PIN de 4 dígitos</p>
+          </div>
+          <button class="btn-toggle-pin" id="btnTogglePin">Definir PIN</button>
+        </div>
+        <div id="pinInputsWrap" style="display:none;">
+          <div class="pin-inputs-row">
+            <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="•" />
+            <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="•" />
+            <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="•" />
+            <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="•" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PREFERÊNCIAS ===== -->
+    <div class="settings-section">
+      <div class="settings-section-title">Preferências</div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <h4>Perfil Infantil (Kids)</h4>
+          <p>Exibe apenas conteúdo adequado para crianças</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="isKidsToggle" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ===== SALVAR ===== -->
+    <div class="save-section">
+      <button class="btn-save-settings" id="btnSave">Salvar Alterações</button>
+      <button class="btn-delete-profile" id="btnDeleteProfile">Excluir Perfil</button>
+    </div>
+  </main>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="js/auth.js"></script>
+  <script>
+  // ===== AVATAR DEFINITIONS =====
+  const AVATARS = [
+    { gradient: 'linear-gradient(135deg, #e50914, #b20710)', label: 'Herói' },
+    { gradient: 'linear-gradient(135deg, #0071eb, #0050a8)', label: 'Detetive' },
+    { gradient: 'linear-gradient(135deg, #46d369, #2d8a42)', label: 'Cientista' },
+    { gradient: 'linear-gradient(135deg, #f5c518, #c49a14)', label: 'Princesa' },
+    { gradient: 'linear-gradient(135deg, #e87c03, #b55e02)', label: 'Guerreiro' },
+    { gradient: 'linear-gradient(135deg, #9b59b6, #6c3483)', label: 'Mago' },
+    { gradient: 'linear-gradient(135deg, #1abc9c, #148f77)', label: 'Robô' },
+    { gradient: 'linear-gradient(135deg, #e74c3c, #922b21)', label: 'Vilão' },
+    { gradient: 'linear-gradient(135deg, #3498db, #1a5276)', label: 'Astronauta' },
+    { gradient: 'linear-gradient(135deg, #2ecc71, #1a7a43)', label: 'Aventureiro' },
+    { gradient: 'linear-gradient(135deg, #f39c12, #9a6007)', label: 'Cowboy' },
+    { gradient: 'linear-gradient(135deg, #8e44ad, #5b2c6f)', label: 'Bruxa' },
+    { gradient: 'linear-gradient(135deg, #16a085, #0e6655)', label: 'Ninja' },
+    { gradient: 'linear-gradient(135deg, #d35400, #873600)', label: 'Pirata' },
+    { gradient: 'linear-gradient(135deg, #2980b9, #1a5276)', label: 'Espião' },
+    { gradient: 'linear-gradient(135deg, #27ae60, #1a6b3c)', label: 'Criança' },
+    { gradient: 'linear-gradient(135deg, #c0392b, #7b241c)', label: 'Vampiro' },
+    { gradient: 'linear-gradient(135deg, #7f8c8d, #4d5656)', label: 'Androide' },
+  ];
+
+  function avatarSVG() {
+    return `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="28" r="16" fill="rgba(255,255,255,0.85)"/>
+      <path d="M10 72c0-16.569 13.431-30 30-30s30 13.431 30 30" fill="rgba(255,255,255,0.85)"/>
+    </svg>`;
+  }
+
+  // ===== STATE =====
+  let user = null;
+  let profiles = [];
+  let currentProfile = null;
+  let profileIndex = -1;
+  let selectedAvatar = 0;
+  let pinEnabled = false;
+
+  // ===== INIT =====
+  document.addEventListener('DOMContentLoaded', () => {
+    user = Auth.requireAuth('index.html');
+    if (!user) return;
+
+    profiles = Auth.getProfiles(user.id);
+
+    // Pega profileId da URL
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get('profileId');
+
+    if (profileId) {
+      profileIndex = profiles.findIndex(p => String(p.id) === String(profileId));
+      currentProfile = profiles[profileIndex];
+    }
+
+    // Fallback: usa perfil ativo da sessão
+    if (!currentProfile) {
+      const activeProfile = Auth.getCurrentProfile();
+      if (activeProfile) {
+        profileIndex = profiles.findIndex(p => p.id === activeProfile.id);
+        currentProfile = profiles[profileIndex];
+      }
+    }
+
+    // Fallback: primeiro perfil
+    if (!currentProfile && profiles.length) {
+      profileIndex = 0;
+      currentProfile = profiles[0];
+    }
+
+    if (!currentProfile) {
+      window.location.href = 'profiles.html';
+      return;
+    }
+
+    loadProfileData();
+    renderAvatarGrid();
+    setupPinSection();
+    setupSaveButton();
+    setupDeleteButton();
+  });
+
+  // ===== LOAD PROFILE DATA =====
+  function loadProfileData() {
+    document.getElementById('profileName').value = currentProfile.name;
+    document.getElementById('isKidsToggle').checked = currentProfile.isKids || false;
+    selectedAvatar = currentProfile.avatar || 0;
+    pinEnabled = !!currentProfile.pin;
+
+    updatePreview();
+    updatePinButton();
+  }
+
+  // ===== UPDATE PREVIEW =====
+  function updatePreview() {
+    const av = AVATARS[selectedAvatar] || AVATARS[0];
+    document.getElementById('previewAvatar').innerHTML = `
+      <div style="width:80px;height:80px;background:${av.gradient};border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${avatarSVG()}</div>`;
+    document.getElementById('previewName').textContent = document.getElementById('profileName').value || currentProfile.name;
+    document.getElementById('previewEmail').textContent = user.email;
+
+    const badges = document.getElementById('previewBadges');
+    badges.innerHTML = '';
+    if (document.getElementById('isKidsToggle').checked) {
+      badges.innerHTML += '<span class="badge-kids">Kids</span>';
+    }
+    if (pinEnabled) {
+      badges.innerHTML += '<span class="badge-pin">🔒 PIN ativo</span>';
+    }
+  }
+
+  // ===== AVATAR GRID =====
+  function renderAvatarGrid() {
+    const grid = document.getElementById('avatarGrid');
+    grid.innerHTML = '';
+    AVATARS.forEach((av, i) => {
+      const opt = document.createElement('div');
+      opt.className = 'avatar-option' + (i === selectedAvatar ? ' selected' : '');
+      opt.style.background = av.gradient;
+      opt.title = av.label;
+      opt.innerHTML = avatarSVG();
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('#avatarGrid .avatar-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedAvatar = i;
+        updatePreview();
+      });
+      grid.appendChild(opt);
+    });
+  }
+
+  // ===== PIN SECTION =====
+  function setupPinSection() {
+    const pinInputs = document.querySelectorAll('.pin-digit');
+
+    pinInputs.forEach((input, i) => {
+      input.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        e.target.value = val;
+        if (val && i < pinInputs.length - 1) pinInputs[i + 1].focus();
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && i > 0) {
+          pinInputs[i - 1].focus();
+          pinInputs[i - 1].value = '';
+        }
+      });
+    });
+
+    document.getElementById('btnTogglePin').addEventListener('click', () => {
+      pinEnabled = !pinEnabled;
+      updatePinButton();
+      updatePreview();
+    });
+  }
+
+  function updatePinButton() {
+    const btn = document.getElementById('btnTogglePin');
+    const wrap = document.getElementById('pinInputsWrap');
+    if (pinEnabled) {
+      btn.textContent = 'Remover PIN';
+      btn.classList.add('active');
+      wrap.style.display = 'block';
+      // Preenche com PIN atual se existir
+      if (currentProfile.pin) {
+        const digits = document.querySelectorAll('.pin-digit');
+        currentProfile.pin.split('').forEach((d, i) => {
+          if (digits[i]) digits[i].value = d;
+        });
+      }
+    } else {
+      btn.textContent = 'Definir PIN';
+      btn.classList.remove('active');
+      wrap.style.display = 'none';
+      document.querySelectorAll('.pin-digit').forEach(d => d.value = '');
+    }
+  }
+
+  // ===== SAVE =====
+  function setupSaveButton() {
+    document.getElementById('profileName').addEventListener('input', updatePreview);
+    document.getElementById('isKidsToggle').addEventListener('change', updatePreview);
+
+    document.getElementById('btnSave').addEventListener('click', () => {
+      const name = document.getElementById('profileName').value.trim();
+      if (!name) {
+        toast('Digite um nome para o perfil.', 'error');
+        document.getElementById('profileName').focus();
+        return;
+      }
+
+      let pin = null;
+      if (pinEnabled) {
+        const digits = document.querySelectorAll('.pin-digit');
+        pin = Array.from(digits).map(d => d.value).join('');
+        if (pin.length < 4 || !/^\d{4}$/.test(pin)) {
+          toast('Digite um PIN de 4 dígitos numéricos.', 'error');
+          return;
+        }
+      }
+
+      profiles[profileIndex] = {
+        ...currentProfile,
+        name,
+        avatar: selectedAvatar,
+        pin: pinEnabled ? pin : null,
+        isKids: document.getElementById('isKidsToggle').checked
+      };
+
+      Auth.saveProfiles(user.id, profiles);
+
+      // Atualiza perfil ativo na sessão se for o mesmo
+      const activeProfile = Auth.getCurrentProfile();
+      if (activeProfile && activeProfile.id === currentProfile.id) {
+        Auth.setCurrentProfile(profiles[profileIndex]);
+      }
+
+      currentProfile = profiles[profileIndex];
+      toast('Perfil salvo com sucesso!', 'success');
+      updatePreview();
+    });
+  }
+
+  // ===== DELETE =====
+  function setupDeleteButton() {
+    const btn = document.getElementById('btnDeleteProfile');
+    if (profiles.length <= 1) {
+      btn.style.display = 'none';
+      return;
+    }
+    btn.addEventListener('click', () => {
+      if (!confirm(`Excluir o perfil "${currentProfile.name}"? Esta ação não pode ser desfeita.`)) return;
+      profiles.splice(profileIndex, 1);
+      Auth.saveProfiles(user.id, profiles);
+
+      // Limpa perfil ativo se for o excluído
+      const activeProfile = Auth.getCurrentProfile();
+      if (activeProfile && activeProfile.id === currentProfile.id) {
+        Auth.clearProfile();
+      }
+
+      window.location.href = 'profiles.html';
+    });
+  }
+
+  // ===== TOAST =====
+  function toast(msg, type = 'info') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    const icons = { success: '✓', error: '✕', info: 'ℹ' };
+    t.innerHTML = `<span>${icons[type] || 'ℹ'}</span><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(20px)';
+      t.style.transition = 'all 0.3s';
+      setTimeout(() => t.remove(), 300);
+    }, 3500);
+  }
+  </script>
+</body>
+</html>
