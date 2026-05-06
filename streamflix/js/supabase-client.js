@@ -2,8 +2,13 @@
 // SUPABASE CLIENT - CINEFLIX HUB
 // ============================================
 
-const SUPABASE_URL = 'https://lynltvzimbqltpafunmu.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmx0dnppbWJxbHRwYWZ1bm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMzE2MzIsImV4cCI6MjA5MzYwNzYzMn0.XuF30WIDCYKtC9gD7ZNc03LqMNvw9o0Ujp7ptlxqk30';
+// Aguardar CONFIG carregar
+function getSupabaseConfig() {
+  return {
+    url: window.CONFIG?.SUPABASE_URL || 'https://lynltvzimbqltpafunmu.supabase.co',
+    key: window.CONFIG?.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmx0dnppbWJxbHRwYWZ1bm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMzE2MzIsImV4cCI6MjA5MzYwNzYzMn0.XuF30WIDCYKtC9gD7ZNc03LqMNvw9o0Ujp7ptlxqk30'
+  };
+}
 
 // Importar Supabase via CDN
 const supabaseScript = document.createElement('script');
@@ -19,7 +24,8 @@ let supabase = null;
 // Inicializar quando o script carregar
 window.addEventListener('load', () => {
   if (window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const config = getSupabaseConfig();
+    supabase = window.supabase.createClient(config.url, config.key);
     console.log('✅ Supabase Client inicializado');
   }
 });
@@ -36,7 +42,8 @@ const SupabaseAuth = (() => {
     while (!supabase && attempts < 50) {
       await new Promise(resolve => setTimeout(resolve, 100));
       if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const config = getSupabaseConfig();
+        supabase = window.supabase.createClient(config.url, config.key);
       }
       attempts++;
     }
