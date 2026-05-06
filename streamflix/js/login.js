@@ -17,11 +17,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentUser && currentUser.id && currentUser.role) {
       console.log('🟢 Login: Usuário logado, redirecionando para:', currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html');
       
+      // Limpar timestamps de loop detection antes de redirecionar
+      sessionStorage.removeItem('dashboard_last_check');
+      sessionStorage.removeItem('profiles_last_check');
+      console.log('🟢 Login: Timestamps de loop detection limpos');
+      
       // Marcar que está redirecionando
       window.isRedirecting = true;
       
-      // Aguardar 1 segundo antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Aguardar 500ms antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       window.location.href = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       return;
@@ -74,8 +79,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (result.success) {
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       
-      // Aguardar 2 segundos antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Limpar timestamps de loop detection antes de redirecionar
+      sessionStorage.removeItem('dashboard_last_check');
+      sessionStorage.removeItem('profiles_last_check');
+      console.log('🟢 Login: Timestamps de loop detection limpos');
+      
+      // Aguardar 1 segundo antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       console.log('🟢 Login: Redirecionando para:', dest);
