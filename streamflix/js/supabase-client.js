@@ -10,8 +10,8 @@ function getSupabaseConfig() {
   };
 }
 
-// Cliente Supabase
-let supabase = null;
+// Cliente Supabase (usar variável diferente para evitar conflito)
+let supabaseClient = null;
 
 // Inicializar Supabase quando o DOM carregar
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Inicializar Supabase
 function initSupabase() {
-  if (window.supabase && !supabase) {
+  if (window.supabase && !supabaseClient) {
     const config = getSupabaseConfig();
-    supabase = window.supabase.createClient(config.url, config.key);
+    supabaseClient = window.supabase.createClient(config.url, config.key);
     console.log('✅ Supabase Client inicializado');
   } else if (!window.supabase) {
     console.warn('⚠️ Supabase CDN ainda não carregou, aguardando...');
@@ -39,20 +39,20 @@ const SupabaseAuth = (() => {
   // Aguardar inicialização do Supabase
   async function waitForSupabase() {
     let attempts = 0;
-    while (!supabase && attempts < 100) { // Aumentei de 50 para 100
+    while (!supabaseClient && attempts < 100) { // Aumentei de 50 para 100
       await new Promise(resolve => setTimeout(resolve, 100));
-      if (window.supabase && !supabase) {
+      if (window.supabase && !supabaseClient) {
         const config = getSupabaseConfig();
-        supabase = window.supabase.createClient(config.url, config.key);
+        supabaseClient = window.supabase.createClient(config.url, config.key);
         console.log('✅ Supabase inicializado via waitForSupabase');
       }
       attempts++;
     }
-    if (!supabase) {
+    if (!supabaseClient) {
       console.error('❌ Supabase não carregou após', attempts, 'tentativas');
       throw new Error('Supabase não carregou. Recarregue a página.');
     }
-    return supabase;
+    return supabaseClient;
   }
 
   // ============================================
@@ -553,7 +553,7 @@ const SupabaseAuth = (() => {
     removeProgress,
     
     // Supabase client direto (para casos avançados)
-    getClient: () => supabase
+    getClient: () => supabaseClient
   };
 })();
 
