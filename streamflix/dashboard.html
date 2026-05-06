@@ -12,42 +12,36 @@
   <link rel="stylesheet" href="css/dashboard.css" />
   <!-- Verificação de segurança — roda ANTES de qualquer conteúdo renderizar -->
   <script>
-    (function() {
+    (async function() {
+      console.log('🔵 Dashboard: Verificando autenticação...');
+      
       function getUser() {
         try {
           const d = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
           return d ? JSON.parse(d) : null;
         } catch(e) { return null; }
       }
-      function getUsers() {
-        try {
-          const d = localStorage.getItem('sf_users');
-          return d ? JSON.parse(d) : [];
-        } catch(e) { return []; }
-      }
+      
       const user = getUser();
+      console.log('🔵 Dashboard: Usuário do cache:', user);
+      
       // Sem sessão → login
       if (!user || !user.id || !user.role) {
+        console.log('🔴 Dashboard: Sem usuário, redirecionando para login...');
         window.location.replace('index.html');
         document.documentElement.style.display = 'none';
         throw new Error('Unauthorized');
       }
+      
       // Não é admin → home
       if (user.role !== 'admin') {
+        console.log('🔴 Dashboard: Não é admin, redirecionando para home...');
         window.location.replace('home.html');
         document.documentElement.style.display = 'none';
         throw new Error('Forbidden');
       }
-      // Verifica no storage se ainda é admin (evita manipulação do sessionStorage)
-      const users = getUsers();
-      const dbUser = users.find(u => u.id === user.id);
-      if (!dbUser || dbUser.role !== 'admin') {
-        sessionStorage.removeItem('sf_current_user');
-        localStorage.removeItem('sf_current_user');
-        window.location.replace('index.html');
-        document.documentElement.style.display = 'none';
-        throw new Error('Forbidden');
-      }
+      
+      console.log('🟢 Dashboard: Admin autenticado, carregando dashboard...');
     })();
   </script>
 </head>
