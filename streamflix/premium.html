@@ -342,8 +342,13 @@
     } catch(e) { if(e!==0) window.location.replace('index.html'); }
   })();
 
-  const user = Auth.requireAuth('index.html');
-  if (!user) throw new Error('Not authenticated');
+  // Inicialização assíncrona
+  (async () => {
+    const user = await Auth.requireAuth('index.html');
+    if (!user) throw new Error('Not authenticated');
+    
+    window.premiumUser = user; // Salvar para uso global
+  })();
 
   let selectedPlan = 'monthly';
   let currentPaymentId = null;

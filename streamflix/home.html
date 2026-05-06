@@ -458,7 +458,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
 
   // ---- AUTH ----
-  const user = Auth.requireAuth('index.html');
+  const user = await Auth.requireAuth('index.html');
   if (!user) return;
 
   // ---- PROFILE CHECK ----

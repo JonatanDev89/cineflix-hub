@@ -150,8 +150,8 @@
   let pinEnabled = false;
 
   // ===== INIT =====
-  document.addEventListener('DOMContentLoaded', () => {
-    user = Auth.requireAuth('index.html');
+  document.addEventListener('DOMContentLoaded', async () => {
+    user = await Auth.requireAuth('index.html');
     if (!user) return;
 
     profiles = Auth.getProfiles(user.id);
