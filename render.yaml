@@ -5,10 +5,16 @@ services:
     region: oregon
     plan: free
     branch: main
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "python generate_config.py && pip install -r requirements.txt"
     startCommand: "python streamflix/proxy.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: PORT
         value: 3000
+      - key: SUPABASE_URL
+        value: https://lynltvzimbqltpafunmu.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmx0dnppbWJxbHRwYWZ1bm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMzE2MzIsImV4cCI6MjA5MzYwNzYzMn0.XuF30WIDCYKtC9gD7ZNc03LqMNvw9o0Ujp7ptlxqk30
+      - key: TMDB_API_KEY
+        value: 15d2ea6d0dc1d476efbca3eba2b9bbfb

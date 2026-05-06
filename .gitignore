@@ -43,3 +43,6 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Generated config (será gerado pelo build)
+streamflix/js/config.js
