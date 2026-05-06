@@ -3,13 +3,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('🔵 Login: Verificando se já está logado...');
   
+  // Flag para evitar múltiplos redirecionamentos
+  if (window.isRedirecting) {
+    console.log('🟡 Login: Já está redirecionando, aguardando...');
+    return;
+  }
+  
   // Verificar se já está logado (async agora)
   try {
     const currentUser = await Auth.getCurrentUser();
     console.log('🔵 Login: Usuário atual:', currentUser);
     
-    if (currentUser && currentUser.id) {
+    if (currentUser && currentUser.id && currentUser.role) {
       console.log('🟢 Login: Usuário logado, redirecionando para:', currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html');
+      
+      // Marcar que está redirecionando
+      window.isRedirecting = true;
+      
+      // Aguardar 1 segundo antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       window.location.href = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       return;
     } else {
