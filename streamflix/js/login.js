@@ -3,31 +3,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('🔵 Login: Página carregada');
   
+  // PRIMEIRA COISA: Verificar se veio de página protegida
+  const fromProtected = sessionStorage.getItem('from_protected_page');
+  if (fromProtected) {
+    console.log('🟡 Login: Veio de página protegida, limpando TUDO e parando aqui...');
+    sessionStorage.clear();
+    localStorage.removeItem('sf_current_user');
+    // NÃO faz mais nada, apenas mostra o formulário de login
+    return;
+  }
+  
   // IMPORTANTE: Prevenir loop infinito
   const loopCount = parseInt(sessionStorage.getItem('login_loop_count') || '0');
   console.log('🔵 Login: Loop count:', loopCount);
   
   if (loopCount > 2) {
-    console.log('🔴 Login: Loop detectado! Limpando tudo...');
+    console.log('🔴 Login: Loop detectado! Limpando tudo e parando...');
     sessionStorage.clear();
     localStorage.removeItem('sf_current_user');
-    sessionStorage.setItem('loop_cleared', 'true');
-    // Não redireciona, apenas mostra o login
+    // NÃO faz mais nada, apenas mostra o formulário de login
     return;
   }
   
   sessionStorage.setItem('login_loop_count', (loopCount + 1).toString());
-  
-  // Prevenir loop: se acabou de vir do dashboard/profiles, não redireciona
-  const fromProtected = sessionStorage.getItem('from_protected_page');
-  if (fromProtected) {
-    console.log('🟡 Login: Veio de página protegida, limpando sessão...');
-    sessionStorage.removeItem('from_protected_page');
-    sessionStorage.removeItem('sf_current_user');
-    localStorage.removeItem('sf_current_user');
-    sessionStorage.removeItem('login_loop_count');
-    return; // NÃO tenta verificar usuário, apenas mostra o login
-  }
   
   // Verificar se já está logado (async agora)
   try {

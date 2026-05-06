@@ -31,14 +31,15 @@
       sessionStorage.setItem('dashboard_loop_count', (loopCount + 1).toString());
       
       // Aguardar o Auth estar disponível (pode ser async do Supabase)
+      console.log('🔵 Dashboard: Aguardando Auth carregar...');
       let attempts = 0;
-      while (!window.Auth && attempts < 50) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+      while (!window.Auth && attempts < 100) { // Aumentei de 50 para 100
+        await new Promise(resolve => setTimeout(resolve, 100)); // Aumentei de 50ms para 100ms
         attempts++;
       }
       
       if (!window.Auth) {
-        console.log('🔴 Dashboard: Auth não carregou, redirecionando...');
+        console.log('🔴 Dashboard: Auth não carregou após', attempts * 100, 'ms');
         sessionStorage.setItem('from_protected_page', 'true');
         sessionStorage.removeItem('dashboard_loop_count');
         window.location.replace('index.html');
@@ -46,10 +47,16 @@
         throw new Error('Auth not loaded');
       }
       
+      console.log('🟢 Dashboard: Auth carregado após', attempts * 100, 'ms');
+      
+      // Aguardar mais um pouco para garantir que está totalmente inicializado
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       async function getUser() {
         try {
-          // Se Auth.getCurrentUser é async, aguarda
+          console.log('🔵 Dashboard: Chamando Auth.getCurrentUser()...');
           const user = await window.Auth.getCurrentUser();
+          console.log('🔵 Dashboard: Auth.getCurrentUser() retornou:', user);
           return user;
         } catch(e) { 
           console.error('🔴 Dashboard: Erro ao obter usuário:', e);
