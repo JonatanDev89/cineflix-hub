@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar Primeiro Admin - CineFlix Hub</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    .step {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .step h3 {
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+    .step p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .code {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #c3e6cb;
+      margin: 20px 0;
+    }
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #ffeaa7;
+      margin: 20px 0;
+    }
+    .link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .link a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link a:hover {
+      text-decoration: underline;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Criar Primeiro Admin</h1>
+    
+    <div class="warning">
+      <strong>⚠️ Importante:</strong> Este processo cria o primeiro administrador do sistema usando o Supabase.
+    </div>
+
+    <div class="step">
+      <h3>📝 Passo 1: Criar Conta Normal</h3>
+      <p>Primeiro, crie uma conta normal no sistema:</p>
+      <p><strong>Nome:</strong> Jonatan Ott</p>
+      <p><strong>Email:</strong> marlonott75@gmail.com</p>
+      <p><strong>Senha:</strong> (escolha uma senha forte)</p>
+      <button onclick="window.location.href='index.html'">→ Ir para Registro</button>
+    </div>
+
+    <div class="step">
+      <h3>🔧 Passo 2: Executar SQL no Supabase</h3>
+      <p>Depois de criar a conta, vá no <strong>SQL Editor</strong> do Supabase e execute:</p>
+      <div class="code">
+-- Promover para admin
+UPDATE public.users
+SET role = 'admin', is_premium = true
+WHERE email = 'marlonott75@gmail.com';
+
+-- Verificar
+SELECT id, name, email, role, is_premium
+FROM public.users
+WHERE email = 'marlonott75@gmail.com';
+      </div>
+      <button onclick="window.open('https://supabase.com/dashboard/project/lynltvzimbqltpafunmu/editor', '_blank')">
+        → Abrir SQL Editor
+      </button>
+    </div>
+
+    <div class="step">
+      <h3>✅ Passo 3: Fazer Login como Admin</h3>
+      <p>Após executar o SQL, faça logout e login novamente. Você terá acesso ao painel administrativo!</p>
+      <button onclick="window.location.href='index.html'">→ Fazer Login</button>
+    </div>
+
+    <div class="success">
+      <strong>✨ Alternativa Rápida:</strong><br>
+      Se você já criou a conta, pode executar este comando SQL diretamente:
+      <div class="code" style="margin-top:10px;">
+SELECT public.create_admin(
+  'marlonott75@gmail.com',
+  'sua-senha',
+  'Jonatan Ott'
+);
+      </div>
+    </div>
+
+    <div class="link">
+      <a href="index.html">← Voltar para Login</a>
+    </div>
+  </div>
+</body>
+</html>
