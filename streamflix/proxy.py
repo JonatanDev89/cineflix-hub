@@ -149,6 +149,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # Redirecionar raiz para index.html
+        if self.path == "/" or self.path == "":
+            self.path = "/index.html"
+        
         if self.path.startswith("/api/payment/status"):
             self._payment_status()
         elif self.path.startswith("/api/plans"):
