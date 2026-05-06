@@ -3,6 +3,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('🔵 Login: Verificando se já está logado...');
   
+  // Prevenir loop: se acabou de vir do dashboard/profiles, não redireciona
+  const fromProtected = sessionStorage.getItem('from_protected_page');
+  if (fromProtected) {
+    console.log('🟡 Login: Veio de página protegida, limpando sessão...');
+    sessionStorage.removeItem('from_protected_page');
+    sessionStorage.removeItem('sf_current_user');
+    localStorage.removeItem('sf_current_user');
+  }
+  
   // Verificar se já está logado (async agora)
   try {
     const currentUser = await Auth.getCurrentUser();
@@ -10,10 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (currentUser && currentUser.id && currentUser.role) {
       console.log('🟢 Login: Usuário logado, redirecionando para:', currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html');
-      
-      // Limpar qualquer flag de loop
-      sessionStorage.removeItem('dashboard_last_check');
-      sessionStorage.removeItem('profiles_last_check');
       
       const dest = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       window.location.replace(dest);
@@ -67,12 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (result.success) {
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       
-      // Limpar qualquer flag de loop
-      sessionStorage.removeItem('dashboard_last_check');
-      sessionStorage.removeItem('profiles_last_check');
-      
-      // Aguardar 800ms antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Aguardar 500ms antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       console.log('🟢 Login: Redirecionando para:', dest);

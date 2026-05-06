@@ -1,7 +1,7 @@
 // ===== DASHBOARD LOGIC =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
-  const user = Auth.requireAdmin('index.html');
+  const user = await Auth.requireAdmin('index.html');
   if (!user) return;
 
   document.getElementById('sidebarUserName').textContent = user.name;

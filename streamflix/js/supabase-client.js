@@ -205,8 +205,8 @@ const SupabaseAuth = (() => {
       console.log('🔵 requireAuth: Usuário:', user);
       
       if (!user || !user.id) {
-        console.log('🔴 requireAuth: Sem usuário válido, aguardando 500ms antes de redirecionar...');
-        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log('🔴 requireAuth: Sem usuário válido, redirecionando para:', redirectTo);
+        sessionStorage.setItem('from_protected_page', 'true');
         window.location.replace(redirectTo);
         return null;
       }
@@ -215,23 +215,39 @@ const SupabaseAuth = (() => {
       return user;
     } catch (error) {
       console.error('🔴 requireAuth: Erro:', error);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      sessionStorage.setItem('from_protected_page', 'true');
       window.location.replace(redirectTo);
       return null;
     }
   }
 
   async function requireAdmin(redirectTo = 'home.html') {
-    const user = await getCurrentUser();
-    if (!user) {
+    try {
+      const user = await getCurrentUser();
+      console.log('🔵 requireAdmin: Usuário:', user);
+      
+      if (!user || !user.id) {
+        console.log('🔴 requireAdmin: Sem usuário, redirecionando para login...');
+        sessionStorage.setItem('from_protected_page', 'true');
+        window.location.replace('index.html');
+        return null;
+      }
+      
+      if (user.role !== 'admin') {
+        console.log('🔴 requireAdmin: Não é admin, redirecionando para:', redirectTo);
+        sessionStorage.setItem('from_protected_page', 'true');
+        window.location.replace(redirectTo);
+        return null;
+      }
+      
+      console.log('🟢 requireAdmin: Admin autenticado:', user.email);
+      return user;
+    } catch (error) {
+      console.error('🔴 requireAdmin: Erro:', error);
+      sessionStorage.setItem('from_protected_page', 'true');
       window.location.replace('index.html');
       return null;
     }
-    if (user.role !== 'admin') {
-      window.location.replace(redirectTo);
-      return null;
-    }
-    return user;
   }
 
   // ============================================
