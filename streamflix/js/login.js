@@ -3,12 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('🔵 Login: Verificando se já está logado...');
   
-  // Flag para evitar múltiplos redirecionamentos
-  if (window.isRedirecting) {
-    console.log('🟡 Login: Já está redirecionando, aguardando...');
-    return;
-  }
-  
   // Verificar se já está logado (async agora)
   try {
     const currentUser = await Auth.getCurrentUser();
@@ -17,18 +11,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentUser && currentUser.id && currentUser.role) {
       console.log('🟢 Login: Usuário logado, redirecionando para:', currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html');
       
-      // Limpar timestamps de loop detection antes de redirecionar
+      // Limpar qualquer flag de loop
       sessionStorage.removeItem('dashboard_last_check');
       sessionStorage.removeItem('profiles_last_check');
-      console.log('🟢 Login: Timestamps de loop detection limpos');
       
-      // Marcar que está redirecionando
-      window.isRedirecting = true;
-      
-      // Aguardar 500ms antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      window.location.href = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
+      const dest = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
+      window.location.replace(dest);
       return;
     } else {
       console.log('🟡 Login: Nenhum usuário logado');
@@ -79,17 +67,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (result.success) {
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       
-      // Limpar timestamps de loop detection antes de redirecionar
+      // Limpar qualquer flag de loop
       sessionStorage.removeItem('dashboard_last_check');
       sessionStorage.removeItem('profiles_last_check');
-      console.log('🟢 Login: Timestamps de loop detection limpos');
       
-      // Aguardar 1 segundo antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Aguardar 800ms antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       console.log('🟢 Login: Redirecionando para:', dest);
-      window.location.href = dest;
+      window.location.replace(dest);
     } else {
       showAlert('loginAlert', 'error', result.message);
     }
