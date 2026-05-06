@@ -1,15 +1,22 @@
 // ===== LOGIN PAGE LOGIC =====
 document.addEventListener('DOMContentLoaded', async () => {
 
+  console.log('🔵 Login: Verificando se já está logado...');
+  
   // Verificar se já está logado (async agora)
   try {
     const currentUser = await Auth.getCurrentUser();
+    console.log('🔵 Login: Usuário atual:', currentUser);
+    
     if (currentUser && currentUser.id) {
+      console.log('🟢 Login: Usuário logado, redirecionando para:', currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html');
       window.location.href = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       return;
+    } else {
+      console.log('🟡 Login: Nenhum usuário logado');
     }
   } catch (error) {
-    console.log('Não há usuário logado');
+    console.log('🟡 Login: Erro ao verificar usuário (normal se não estiver logado):', error.message);
   }
 
   const tabs = document.querySelectorAll('.auth-tab');

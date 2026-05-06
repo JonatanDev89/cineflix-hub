@@ -200,12 +200,25 @@ const SupabaseAuth = (() => {
   }
 
   async function requireAuth(redirectTo = 'index.html') {
-    const user = await getCurrentUser();
-    if (!user) {
+    try {
+      const user = await getCurrentUser();
+      console.log('🔵 requireAuth: Usuário:', user);
+      
+      if (!user || !user.id) {
+        console.log('🔴 requireAuth: Sem usuário válido, aguardando 500ms antes de redirecionar...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        window.location.replace(redirectTo);
+        return null;
+      }
+      
+      console.log('🟢 requireAuth: Usuário autenticado:', user.email);
+      return user;
+    } catch (error) {
+      console.error('🔴 requireAuth: Erro:', error);
+      await new Promise(resolve => setTimeout(resolve, 500));
       window.location.replace(redirectTo);
       return null;
     }
-    return user;
   }
 
   async function requireAdmin(redirectTo = 'home.html') {

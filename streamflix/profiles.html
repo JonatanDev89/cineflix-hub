@@ -131,19 +131,38 @@
 
   // ===== INIT =====
   document.addEventListener('DOMContentLoaded', async () => {
-    user = await Auth.requireAuth('index.html');
-    if (!user) return;
+    console.log('🔵 Profiles: Iniciando...');
+    
+    try {
+      user = await Auth.requireAuth('index.html');
+      console.log('🔵 Profiles: Usuário autenticado:', user);
+      
+      if (!user) {
+        console.log('🔴 Profiles: Sem usuário, redirecionando...');
+        return;
+      }
 
-    profiles = await Auth.getProfiles(user.id);
-
-    // Se não tem perfis, cria um padrão
-    if (!profiles.length) {
-      profiles = [{ id: Date.now(), name: user.name, avatar: 0, pin: null, isKids: false }];
-      await Auth.saveProfiles(user.id, profiles);
+      console.log('🔵 Profiles: Buscando perfis do usuário:', user.id);
       profiles = await Auth.getProfiles(user.id);
-    }
+      console.log('🔵 Profiles: Perfis encontrados:', profiles);
 
-    renderProfiles();
+      // Se não tem perfis, cria um padrão
+      if (!profiles || !profiles.length) {
+        console.log('🟡 Profiles: Nenhum perfil encontrado, criando padrão...');
+        const newProfile = { id: Date.now(), name: user.name, avatar: 0, pin: null, isKids: false };
+        const result = await Auth.createProfile(user.id, newProfile);
+        console.log('🟡 Profiles: Perfil criado:', result);
+        
+        profiles = await Auth.getProfiles(user.id);
+        console.log('🟡 Profiles: Perfis após criação:', profiles);
+      }
+
+      console.log('🟢 Profiles: Renderizando perfis...');
+      renderProfiles();
+    } catch (error) {
+      console.error('🔴 Profiles: Erro:', error);
+      alert('Erro ao carregar perfis: ' + error.message);
+    }
     setupAddModal();
     setupPinModal();
     setupManageButton();
