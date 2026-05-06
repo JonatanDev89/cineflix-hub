@@ -1,10 +1,15 @@
 // ===== LOGIN PAGE LOGIC =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
-  const currentUser = Auth.getCurrentUser();
-  if (currentUser) {
-    window.location.href = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
-    return;
+  // Verificar se já está logado (async agora)
+  try {
+    const currentUser = await Auth.getCurrentUser();
+    if (currentUser && currentUser.id) {
+      window.location.href = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
+      return;
+    }
+  } catch (error) {
+    console.log('Não há usuário logado');
   }
 
   const tabs = document.querySelectorAll('.auth-tab');
@@ -41,13 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!password) { showFieldError('loginPassword', 'Digite sua senha.'); return; }
     const btn = loginForm.querySelector('.btn-primary');
     setLoading(btn, true);
-    await delay(800);
-    const result = Auth.login(email, password, remember);
+    
+    // Login agora é async
+    const result = await Auth.login(email, password, remember);
+    
     setLoading(btn, false);
     if (result.success) {
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       setTimeout(() => {
-        // Só vai para dashboard se for admin E tiver chegado via link direto
         const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
         window.location.href = dest;
       }, 1000);
@@ -73,15 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!valid) return;
     const btn = registerForm.querySelector('.btn-primary');
     setLoading(btn, true);
-    await delay(800);
-    const result = Auth.register(name, email, password);
+    
+    // Register agora é async
+    const result = await Auth.register(name, email, password);
+    
     setLoading(btn, false);
     if (result.success) {
-      if (result.isAdmin) {
-        showAlert('registerAlert', 'success', '✓ Conta admin criada! Faça login para continuar.');
-      } else {
-        showAlert('registerAlert', 'success', '✓ Conta criada! Faça login para continuar.');
-      }
+      showAlert('registerAlert', 'success', '✓ Conta criada! Verifique seu e-mail ou faça login.');
       registerForm.reset();
       setTimeout(() => tabs[0].click(), 1500);
     } else {
