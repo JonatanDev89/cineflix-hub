@@ -1,7 +1,22 @@
 // ===== LOGIN PAGE LOGIC =====
 document.addEventListener('DOMContentLoaded', async () => {
 
-  console.log('🔵 Login: Verificando se já está logado...');
+  console.log('🔵 Login: Página carregada');
+  
+  // IMPORTANTE: Prevenir loop infinito
+  const loopCount = parseInt(sessionStorage.getItem('login_loop_count') || '0');
+  console.log('🔵 Login: Loop count:', loopCount);
+  
+  if (loopCount > 2) {
+    console.log('🔴 Login: Loop detectado! Limpando tudo...');
+    sessionStorage.clear();
+    localStorage.removeItem('sf_current_user');
+    sessionStorage.setItem('loop_cleared', 'true');
+    // Não redireciona, apenas mostra o login
+    return;
+  }
+  
+  sessionStorage.setItem('login_loop_count', (loopCount + 1).toString());
   
   // Prevenir loop: se acabou de vir do dashboard/profiles, não redireciona
   const fromProtected = sessionStorage.getItem('from_protected_page');
@@ -10,6 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     sessionStorage.removeItem('from_protected_page');
     sessionStorage.removeItem('sf_current_user');
     localStorage.removeItem('sf_current_user');
+    sessionStorage.removeItem('login_loop_count');
+    return; // NÃO tenta verificar usuário, apenas mostra o login
   }
   
   // Verificar se já está logado (async agora)
@@ -20,14 +37,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentUser && currentUser.id && currentUser.role) {
       console.log('🟢 Login: Usuário logado, redirecionando para:', currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html');
       
+      // Limpar contador antes de redirecionar
+      sessionStorage.removeItem('login_loop_count');
+      
       const dest = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       window.location.replace(dest);
       return;
     } else {
       console.log('🟡 Login: Nenhum usuário logado');
+      sessionStorage.removeItem('login_loop_count');
     }
   } catch (error) {
     console.log('🟡 Login: Erro ao verificar usuário (normal se não estiver logado):', error.message);
+    sessionStorage.removeItem('login_loop_count');
   }
 
   const tabs = document.querySelectorAll('.auth-tab');
@@ -68,12 +90,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Login agora é async
     const result = await Auth.login(email, password, remember);
     
+    
     setLoading(btn, false);
     if (result.success) {
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       
-      // Aguardar 500ms antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Limpar contador de loop antes de redirecionar
+      sessionStorage.removeItem('login_loop_count');
+      sessionStorage.removeItem('from_protected_page');
+      
+      // Aguardar 300ms antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       console.log('🟢 Login: Redirecionando para:', dest);

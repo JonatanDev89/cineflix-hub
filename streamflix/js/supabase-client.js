@@ -163,17 +163,29 @@ const SupabaseAuth = (() => {
 
   async function getCurrentUser() {
     try {
+      console.log('🔵 SupabaseAuth.getCurrentUser: Iniciando...');
+      
       // Primeiro tenta pegar do cache
       const cached = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
       if (cached) {
-        return JSON.parse(cached);
+        console.log('🟢 SupabaseAuth.getCurrentUser: Usuário do cache:', cached);
+        const user = JSON.parse(cached);
+        console.log('🟢 SupabaseAuth.getCurrentUser: Retornando:', user);
+        return user;
       }
+
+      console.log('🟡 SupabaseAuth.getCurrentUser: Sem cache, verificando Supabase...');
 
       // Se não tem cache, verifica sessão do Supabase
       const sb = await waitForSupabase();
       const { data: { user } } = await sb.auth.getUser();
       
-      if (!user) return null;
+      if (!user) {
+        console.log('🟡 SupabaseAuth.getCurrentUser: Sem usuário no Supabase');
+        return null;
+      }
+
+      console.log('🟢 SupabaseAuth.getCurrentUser: Usuário do Supabase:', user.id);
 
       // Buscar dados adicionais
       const { data: userData } = await sb
@@ -191,10 +203,11 @@ const SupabaseAuth = (() => {
         isPremium: userData?.is_premium || false
       };
 
+      console.log('🟢 SupabaseAuth.getCurrentUser: Salvando no cache:', currentUser);
       sessionStorage.setItem('sf_current_user', JSON.stringify(currentUser));
       return currentUser;
     } catch (error) {
-      console.error('Erro ao obter usuário:', error);
+      console.error('🔴 SupabaseAuth.getCurrentUser: Erro:', error);
       return null;
     }
   }

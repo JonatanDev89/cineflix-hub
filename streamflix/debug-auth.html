@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Debug Auth - CineFlix Hub</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+    .section { background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 8px; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    pre { background: #000; padding: 10px; overflow-x: auto; }
+    .success { color: #0f0; }
+    .error { color: #f00; }
+    .info { color: #0ff; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>🔍 Debug de Autenticação</h1>
+  
+  <div class="section">
+    <h2>1. Estado Atual</h2>
+    <button onclick="checkState()">Verificar Estado</button>
+    <button onclick="clearAll()">Limpar Tudo</button>
+    <pre id="state"></pre>
+  </div>
+
+  <div class="section">
+    <h2>2. Teste de Login</h2>
+    <input type="email" id="email" placeholder="E-mail" style="padding:8px; width:250px;" />
+    <input type="password" id="password" placeholder="Senha" style="padding:8px; width:250px;" />
+    <button onclick="testLogin()">Testar Login</button>
+    <pre id="loginResult"></pre>
+  </div>
+
+  <div class="section">
+    <h2>3. Verificar Usuário</h2>
+    <button onclick="checkUser()">getCurrentUser()</button>
+    <pre id="userResult"></pre>
+  </div>
+
+  <div class="section">
+    <h2>4. Logs</h2>
+    <button onclick="clearLogs()">Limpar Logs</button>
+    <pre id="logs"></pre>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    const logsEl = document.getElementById('logs');
+    const originalLog = console.log;
+    const originalError = console.error;
+    
+    function addLog(msg, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      logsEl.innerHTML += `<span class="${type}">[${timestamp}] ${msg}</span>\n`;
+      logsEl.scrollTop = logsEl.scrollHeight;
+    }
+    
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      addLog(args.join(' '), 'info');
+    };
+    
+    console.error = function(...args) {
+      originalError.apply(console, args);
+      addLog(args.join(' '), 'error');
+    };
+
+    function checkState() {
+      const state = {
+        sessionStorage: {
+          sf_current_user: sessionStorage.getItem('sf_current_user'),
+          from_protected_page: sessionStorage.getItem('from_protected_page'),
+          login_loop_count: sessionStorage.getItem('login_loop_count'),
+          dashboard_loop_count: sessionStorage.getItem('dashboard_loop_count'),
+        },
+        localStorage: {
+          sf_current_user: localStorage.getItem('sf_current_user'),
+        },
+        Auth: typeof window.Auth,
+        SupabaseAuth: typeof window.SupabaseAuth,
+      };
+      document.getElementById('state').textContent = JSON.stringify(state, null, 2);
+      addLog('Estado verificado', 'success');
+    }
+
+    function clearAll() {
+      sessionStorage.clear();
+      localStorage.removeItem('sf_current_user');
+      document.getElementById('state').textContent = 'Tudo limpo!';
+      addLog('Storage limpo!', 'success');
+      checkState();
+    }
+
+    async function testLogin() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      if (!email || !password) {
+        document.getElementById('loginResult').textContent = 'Preencha email e senha!';
+        return;
+      }
+
+      addLog(`Tentando login com: ${email}`, 'info');
+      
+      try {
+        const result = await Auth.login(email, password, false);
+        document.getElementById('loginResult').textContent = JSON.stringify(result, null, 2);
+        
+        if (result.success) {
+          addLog('Login bem-sucedido!', 'success');
+          checkState();
+        } else {
+          addLog('Login falhou: ' + result.message, 'error');
+        }
+      } catch (error) {
+        document.getElementById('loginResult').textContent = 'Erro: ' + error.message;
+        addLog('Erro no login: ' + error.message, 'error');
+      }
+    }
+
+    async function checkUser() {
+      addLog('Verificando usuário atual...', 'info');
+      try {
+        const user = await Auth.getCurrentUser();
+        document.getElementById('userResult').textContent = JSON.stringify(user, null, 2);
+        
+        if (user) {
+          addLog(`Usuário encontrado: ${user.email} (${user.role})`, 'success');
+        } else {
+          addLog('Nenhum usuário logado', 'info');
+        }
+      } catch (error) {
+        document.getElementById('userResult').textContent = 'Erro: ' + error.message;
+        addLog('Erro ao verificar usuário: ' + error.message, 'error');
+      }
+    }
+
+    function clearLogs() {
+      logsEl.innerHTML = '';
+    }
+
+    // Auto-check ao carregar
+    setTimeout(() => {
+      addLog('Página carregada', 'success');
+      checkState();
+    }, 1000);
+  </script>
+</body>
+</html>

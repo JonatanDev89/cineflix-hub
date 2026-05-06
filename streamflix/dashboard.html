@@ -15,6 +15,21 @@
     (async function() {
       console.log('🔵 Dashboard: Verificando autenticação...');
       
+      // IMPORTANTE: Detectar loop infinito
+      const loopCount = parseInt(sessionStorage.getItem('dashboard_loop_count') || '0');
+      console.log('🔵 Dashboard: Loop count:', loopCount);
+      
+      if (loopCount > 2) {
+        console.log('🔴 Dashboard: Loop detectado! Redirecionando para login e limpando...');
+        sessionStorage.clear();
+        localStorage.removeItem('sf_current_user');
+        window.location.replace('index.html');
+        document.documentElement.style.display = 'none';
+        throw new Error('Loop detected');
+      }
+      
+      sessionStorage.setItem('dashboard_loop_count', (loopCount + 1).toString());
+      
       // Aguardar o Auth estar disponível (pode ser async do Supabase)
       let attempts = 0;
       while (!window.Auth && attempts < 50) {
@@ -25,6 +40,7 @@
       if (!window.Auth) {
         console.log('🔴 Dashboard: Auth não carregou, redirecionando...');
         sessionStorage.setItem('from_protected_page', 'true');
+        sessionStorage.removeItem('dashboard_loop_count');
         window.location.replace('index.html');
         document.documentElement.style.display = 'none';
         throw new Error('Auth not loaded');
@@ -42,12 +58,13 @@
       }
       
       const user = await getUser();
-      console.log('🔵 Dashboard: Usuário do cache:', user);
+      console.log('🔵 Dashboard: Usuário obtido:', user);
       
       // Sem sessão → login
       if (!user || !user.id || !user.role) {
-        console.log('🔴 Dashboard: Sem usuário, redirecionando para login...');
+        console.log('🔴 Dashboard: Sem usuário válido, redirecionando para login...');
         sessionStorage.setItem('from_protected_page', 'true');
+        sessionStorage.removeItem('dashboard_loop_count');
         window.location.replace('index.html');
         document.documentElement.style.display = 'none';
         throw new Error('Unauthorized');
@@ -57,6 +74,7 @@
       if (user.role !== 'admin') {
         console.log('🔴 Dashboard: Não é admin (role:', user.role, '), redirecionando para home...');
         sessionStorage.setItem('from_protected_page', 'true');
+        sessionStorage.removeItem('dashboard_loop_count');
         window.location.replace('home.html');
         document.documentElement.style.display = 'none';
         throw new Error('Forbidden');
@@ -65,7 +83,8 @@
       console.log('🟢 Dashboard: Admin autenticado! Carregando dashboard...');
       console.log('🟢 Dashboard: Usuário:', user.name, '| Role:', user.role);
       
-      // Marcar que o dashboard foi acessado com sucesso
+      // Limpar contador - tudo OK
+      sessionStorage.removeItem('dashboard_loop_count');
       sessionStorage.setItem('dashboard_loaded', 'true');
     })();
   </script>
