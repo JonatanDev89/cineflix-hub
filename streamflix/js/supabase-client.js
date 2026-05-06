@@ -10,25 +10,25 @@ function getSupabaseConfig() {
   };
 }
 
-// Importar Supabase via CDN
-const supabaseScript = document.createElement('script');
-supabaseScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-supabaseScript.onload = () => {
-  console.log('✅ Supabase carregado');
-};
-document.head.appendChild(supabaseScript);
-
 // Cliente Supabase
 let supabase = null;
 
-// Inicializar quando o script carregar
-window.addEventListener('load', () => {
-  if (window.supabase) {
+// Inicializar Supabase quando o DOM carregar
+document.addEventListener('DOMContentLoaded', () => {
+  initSupabase();
+});
+
+// Inicializar Supabase
+function initSupabase() {
+  if (window.supabase && !supabase) {
     const config = getSupabaseConfig();
     supabase = window.supabase.createClient(config.url, config.key);
     console.log('✅ Supabase Client inicializado');
+  } else if (!window.supabase) {
+    console.warn('⚠️ Supabase CDN ainda não carregou, aguardando...');
+    setTimeout(initSupabase, 100);
   }
-});
+}
 
 // ============================================
 // AUTH SYSTEM COM SUPABASE
@@ -39,15 +39,19 @@ const SupabaseAuth = (() => {
   // Aguardar inicialização do Supabase
   async function waitForSupabase() {
     let attempts = 0;
-    while (!supabase && attempts < 50) {
+    while (!supabase && attempts < 100) { // Aumentei de 50 para 100
       await new Promise(resolve => setTimeout(resolve, 100));
-      if (window.supabase) {
+      if (window.supabase && !supabase) {
         const config = getSupabaseConfig();
         supabase = window.supabase.createClient(config.url, config.key);
+        console.log('✅ Supabase inicializado via waitForSupabase');
       }
       attempts++;
     }
-    if (!supabase) throw new Error('Supabase não carregou');
+    if (!supabase) {
+      console.error('❌ Supabase não carregou após', attempts, 'tentativas');
+      throw new Error('Supabase não carregou. Recarregue a página.');
+    }
     return supabase;
   }
 
@@ -555,5 +559,20 @@ const SupabaseAuth = (() => {
 
 // Exportar como Auth para compatibilidade
 window.Auth = SupabaseAuth;
+
+// ===== COOKIE MANAGER =====
+const CookieManager = (() => {
+  const KEY = 'sf_cookie_consent';
+  function getConsent() { const d = localStorage.getItem(KEY); return d ? JSON.parse(d) : null; }
+  function saveConsent(p) {
+    const c = { timestamp: new Date().toISOString(), necessary: true, analytics: p.analytics||false, marketing: p.marketing||false, preferences: p.preferences||false };
+    localStorage.setItem(KEY, JSON.stringify(c)); return c;
+  }
+  function hasConsent() { return !!getConsent(); }
+  function acceptAll() { return saveConsent({ analytics: true, marketing: true, preferences: true }); }
+  return { getConsent, saveConsent, hasConsent, acceptAll };
+})();
+
+window.CookieManager = CookieManager;
 
 console.log('✅ Supabase Auth System carregado');
