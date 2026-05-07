@@ -34,10 +34,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelectorAll('.toggle-password').forEach(btn => {
     btn.addEventListener('click', () => {
-      const input = btn.previousElementSibling;
-      const isText = input.type === 'text';
-      input.type = isText ? 'password' : 'text';
-      btn.textContent = isText ? 'MOSTRAR' : 'OCULTAR';
+      // Pegar o input dentro do mesmo form-group
+      const formGroup = btn.closest('.form-group');
+      const input = formGroup.querySelector('input[type="password"], input[type="text"]');
+      
+      if (input) {
+        const isText = input.type === 'text';
+        input.type = isText ? 'password' : 'text';
+        btn.textContent = isText ? 'MOSTRAR' : 'OCULTAR';
+      }
     });
   });
 
