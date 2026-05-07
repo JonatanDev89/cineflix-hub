@@ -6,8 +6,7 @@
   <title>CineFlix Hub — Perfis</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
   <link rel="stylesheet" href="css/profiles.css" />
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase CDN removido — usando auth.js local -->
   <script>
     (function() {
       try {
@@ -25,7 +24,6 @@
           document.documentElement.style.display='none'; 
           throw 0; 
         }
-        // Marcar que profiles foi carregado com sucesso
         sessionStorage.setItem('profiles_loaded', 'true');
       } catch(e) { if(e!==0) window.location.replace('index.html'); }
     })();
@@ -100,7 +98,7 @@
   </div>
 
   <script src="js/config.js"></script>
-  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
   <script>
   // ===== AVATAR DEFINITIONS =====
   const AVATARS = [
@@ -150,7 +148,7 @@
     
     try {
       console.log('🔵 Profiles: Chamando Auth.requireAuth...');
-      user = await Auth.requireAuth('index.html');
+      user = Auth.requireAuth('index.html');
       console.log('🔵 Profiles: requireAuth retornou:', user);
       
       if (!user) {
@@ -159,17 +157,15 @@
       }
 
       console.log('🔵 Profiles: Buscando perfis do usuário:', user.id);
-      profiles = await Auth.getProfiles(user.id);
+      profiles = Auth.getProfiles(user.id);
       console.log('🔵 Profiles: Perfis encontrados:', profiles);
 
       // Se não tem perfis, cria um padrão
       if (!profiles || !profiles.length) {
         console.log('🟡 Profiles: Nenhum perfil encontrado, criando padrão...');
         const newProfile = { id: Date.now(), name: user.name, avatar: 0, pin: null, isKids: false };
-        const result = await Auth.createProfile(user.id, newProfile);
-        console.log('🟡 Profiles: Perfil criado:', result);
-        
-        profiles = await Auth.getProfiles(user.id);
+        Auth.saveProfiles(user.id, [newProfile]);
+        profiles = Auth.getProfiles(user.id);
         console.log('🟡 Profiles: Perfis após criação:', profiles);
       }
 
