@@ -1,42 +1,85 @@
 // ===== LOGIN PAGE LOGIC =====
 
-// ===== FUNÇÃO DE LOADING OAUTH (definida primeiro para poder ser chamada imediatamente) =====
-function showOAuthLoading(show) {
-  let overlay = document.getElementById('oauthLoadingOverlay');
-  if (show && !overlay) {
-    const insert = () => {
-      overlay = document.createElement('div');
-      overlay.id = 'oauthLoadingOverlay';
-      overlay.style.cssText = `
-        position:fixed;inset:0;z-index:9999;
-        background:rgba(0,0,0,0.92);
-        display:flex;flex-direction:column;
-        align-items:center;justify-content:center;gap:16px;
-        backdrop-filter:blur(8px);
-      `;
-      overlay.innerHTML = `
-        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" style="animation:oauthSpin 0.8s linear infinite">
-          <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
-          <path d="M12 2a10 10 0 0 1 10 10" stroke="#e50914" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-        <p style="color:#fff;font-size:1rem;font-weight:600;font-family:sans-serif;">Autenticando com Google...</p>
-        <style>@keyframes oauthSpin { to { transform: rotate(360deg); } }</style>
-      `;
-      document.body.appendChild(overlay);
+// ===== GOOGLE LOGIN via Google Identity Services (GSI) =====
+// Chamada automaticamente pelo SDK do Google após o usuário escolher a conta
+function handleGoogleLogin(response) {
+  try {
+    // Decodifica o JWT retornado pelo Google
+    const base64 = response.credential.split('.')[1];
+    const payload = JSON.parse(atob(base64.replace(/-/g, '+').replace(/_/g, '/')));
+
+    const googleId = payload.sub;
+    const email    = payload.email;
+    const name     = payload.name || email.split('@')[0];
+    const picture  = payload.picture || null;
+
+    console.log('🟢 Google GSI: Login recebido para', email);
+
+    // Busca usuário existente no localStorage
+    let users = [];
+    try { users = JSON.parse(localStorage.getItem('sf_users') || '[]'); } catch(e) {}
+
+    let user = users.find(u =>
+      u.email.toLowerCase() === email.toLowerCase() || u.googleId === googleId
+    );
+
+    if (!user) {
+      // Cria conta automaticamente
+      user = {
+        id:        Date.now(),
+        email,
+        name,
+        password:  null,
+        role:      'user',
+        avatar:    name.charAt(0).toUpperCase(),
+        isPremium: false,
+        googleId,
+        picture,
+      };
+      users.push(user);
+      localStorage.setItem('sf_users', JSON.stringify(users));
+
+      // Cria perfil padrão
+      const profileKey = `cf_profiles_${user.id}`;
+      if (!localStorage.getItem(profileKey)) {
+        localStorage.setItem(profileKey, JSON.stringify([{
+          id: Date.now() + 1, name, avatar: 0, pin: null, isKids: false
+        }]));
+      }
+      console.log('🟡 Google GSI: Novo usuário criado:', email);
+    } else {
+      // Atualiza dados do Google
+      user.googleId = googleId;
+      if (picture) user.picture = picture;
+      const idx = users.findIndex(u => u.id === user.id);
+      if (idx !== -1) users[idx] = user;
+      localStorage.setItem('sf_users', JSON.stringify(users));
+      console.log('🟢 Google GSI: Usuário existente:', email);
+    }
+
+    // Salva sessão
+    const session = {
+      id:      user.id,
+      email:   user.email,
+      name:    user.name,
+      role:    user.role,
+      avatar:  user.avatar,
+      picture: user.picture || null
     };
-    if (document.body) insert();
-    else document.addEventListener('DOMContentLoaded', insert);
-  } else if (!show && overlay) {
-    overlay.remove();
+    sessionStorage.setItem('sf_current_user', JSON.stringify(session));
+    sessionStorage.removeItem('from_protected_page');
+
+    console.log('🟢 Google GSI: Sessão salva, redirecionando...');
+    window.location.replace(user.role === 'admin' ? 'dashboard.html' : 'profiles.html');
+
+  } catch(e) {
+    console.error('🔴 Google GSI: Erro no login:', e);
+    const alertEl = document.getElementById('loginAlert');
+    if (alertEl) {
+      alertEl.className = 'alert alert-error show';
+      alertEl.textContent = '❌ Erro ao fazer login com Google. Tente novamente.';
+    }
   }
-}
-
-// ===== DETECTA CALLBACK OAUTH ANTES DO DOM =====
-const _isOAuthCallback = window.location.hash.includes('access_token') ||
-                         window.location.search.includes('code=');
-
-if (_isOAuthCallback) {
-  showOAuthLoading(true);
 }
 
 // ===== MAIN =====
@@ -44,150 +87,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('🔵 Login: Página carregada');
 
-  // ===== HANDLER DO CALLBACK OAUTH =====
-  if (_isOAuthCallback) {
-    console.log('🟡 Login OAuth: Processando callback...');
-
-    try {
-      // Aguardar Supabase inicializar
-      let sb = null;
-      for (let i = 0; i < 100; i++) {
-        await new Promise(r => setTimeout(r, 100));
-
-        // Tentar pegar cliente já inicializado
-        if (window.supabaseClient) {
-          sb = window.supabaseClient;
-          break;
-        }
-
-        // Tentar inicializar manualmente se o CDN já carregou
-        if (window.supabase) {
-          const url = (window.CONFIG || {}).SUPABASE_URL || 'https://lynltvzimbqltpafunmu.supabase.co';
-          const key = (window.CONFIG || {}).SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmx0dnppbWJxbHRwYWZ1bm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMzE2MzIsImV4cCI6MjA5MzYwNzYzMn0.XuF30WIDCYKtC9gD7ZNc03LqMNvw9o0Ujp7ptlxqk30';
-          window.supabaseClient = window.supabase.createClient(url, key);
-          sb = window.supabaseClient;
-          break;
-        }
-      }
-
-      if (!sb) throw new Error('Supabase não inicializou após 10s');
-
-      console.log('🟢 Login OAuth: Supabase pronto, buscando sessão...');
-
-      // Supabase SDK processa o hash automaticamente
-      const { data: { session }, error } = await sb.auth.getSession();
-
-      if (error || !session) {
-        console.error('🔴 Login OAuth: Sem sessão válida', error?.message);
-        showOAuthLoading(false);
-        history.replaceState(null, '', window.location.pathname);
-        showAlert('loginAlert', 'error', '❌ Falha ao autenticar com Google. Tente novamente.');
-        return;
-      }
-
-      console.log('🟢 Login OAuth: Sessão OK para', session.user.email);
-
-      // Buscar dados do usuário na tabela users
-      const { data: userData } = await sb
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      // Criar registro se for primeiro login com Google
-      if (!userData) {
-        console.log('🟡 Login OAuth: Primeiro login, criando usuário...');
-        const nomeNovo = session.user.user_metadata?.full_name
-          || session.user.user_metadata?.name
-          || session.user.email.split('@')[0];
-        
-        const { error: insertError } = await sb.from('users').insert([{
-          id: session.user.id,
-          email: session.user.email,
-          name: nomeNovo,
-          role: 'user',
-          is_premium: false,
-          avatar: nomeNovo[0].toUpperCase()
-        }]);
-        
-        if (insertError) {
-          console.error('🔴 Login OAuth: Erro ao criar usuário:', insertError);
-        } else {
-          console.log('🟢 Login OAuth: Usuário criado com is_premium=false');
-        }
-        
-        // Buscar novamente para garantir dados corretos
-        const { data: newUserData } = await sb
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (newUserData) {
-          userData = newUserData;
-          console.log('🟢 Login OAuth: Dados do novo usuário:', userData);
-        }
-      }
-
-      const nome = userData?.name
-        || session.user.user_metadata?.full_name
-        || session.user.user_metadata?.name
-        || 'Usuário';
-
-      const user = {
-        id: session.user.id,
-        email: session.user.email,
-        name: nome,
-        role: userData?.role || 'user',
-        avatar: userData?.avatar || nome[0].toUpperCase(),
-        isPremium: userData?.is_premium || false,
-        picture: session.user.user_metadata?.avatar_url || null
-      };
-
-      console.log('🟢 Login OAuth: Usuário processado:', user.email, '| role:', user.role, '| isPremium:', user.isPremium);
-
-      // Salvar sessão
-      sessionStorage.setItem('sf_current_user', JSON.stringify(user));
-      sessionStorage.removeItem('from_protected_page');
-
-      // Limpar hash da URL
-      history.replaceState(null, '', window.location.pathname);
-
-      showOAuthLoading(false);
-      showAlert('loginAlert', 'success', `✓ Bem-vindo, ${nome.split(' ')[0]}! Redirecionando...`);
-
-      await new Promise(r => setTimeout(r, 700));
-
-      const dest = user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
-      console.log('🟢 Login OAuth: Redirecionando para', dest);
-      window.location.replace(dest);
-      return;
-
-    } catch (err) {
-      console.error('🔴 Login OAuth: Erro crítico', err);
-      showOAuthLoading(false);
-      history.replaceState(null, '', window.location.pathname);
-      showAlert('loginAlert', 'error', '❌ Erro ao processar login com Google. Tente novamente.');
-    }
-  }
-
-  // ===== FLUXO NORMAL =====
-
+  // Remove flag sem limpar sessão
   if (sessionStorage.getItem('from_protected_page')) {
-    console.log('🟡 Login: Veio de página protegida, removendo flag');
-    // Remove APENAS a flag — não limpa o usuário logado
     sessionStorage.removeItem('from_protected_page');
   }
 
-  // Se já tem usuário logado, redireciona direto (não mostra login)
+  // Se já tem usuário logado, redireciona direto
   const cachedUser = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
   if (cachedUser) {
     try {
       const u = JSON.parse(cachedUser);
       if (u && u.id) {
         console.log('🟢 Login: Usuário já logado, redirecionando...');
-        const dest = u.role === 'admin' ? 'dashboard.html' : 'profiles.html';
-        window.location.replace(dest);
+        window.location.replace(u.role === 'admin' ? 'dashboard.html' : 'profiles.html');
         return;
       }
     } catch(e) {}
@@ -239,8 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       sessionStorage.removeItem('from_protected_page');
       await new Promise(resolve => setTimeout(resolve, 500));
-      const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
-      window.location.replace(dest);
+      window.location.replace(result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html');
     } else {
       showAlert('loginAlert', 'error', result.message);
     }
@@ -266,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const result = await Auth.register(name, email, password);
     setLoading(btn, false);
     if (result.success) {
-      showAlert('registerAlert', 'success', '✓ Conta criada! Verifique seu e-mail ou faça login.');
+      showAlert('registerAlert', 'success', '✓ Conta criada! Faça login para continuar.');
       registerForm.reset();
       setTimeout(() => tabs[0].click(), 1500);
     } else {
