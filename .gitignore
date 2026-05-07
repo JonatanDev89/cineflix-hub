@@ -40,9 +40,13 @@ Thumbs.db
 # Logs
 *.log
 
-# Environment variables
+# Environment variables (NUNCA commitar chaves reais!)
 .env
 .env.local
+.env.production
 
-# Generated config (será gerado pelo build)
+# Config gerado automaticamente (contém chaves)
 streamflix/js/config.js
+
+# Arquivos temporários
+Site antigo/
