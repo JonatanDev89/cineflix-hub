@@ -83,13 +83,6 @@
         <!-- Avatares renderizados via JS -->
       </div>
 
-      <div class="form-field">
-        <label class="checkbox-row">
-          <input type="checkbox" id="newProfileKids" />
-          Perfil Infantil (Kids)
-        </label>
-      </div>
-
       <div class="modal-actions">
         <button class="btn-cancel" id="btnCancelAdd">Cancelar</button>
         <button class="btn-save" id="btnSaveProfile">Salvar</button>
@@ -100,39 +93,36 @@
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script>
-  // ===== AVATAR DEFINITIONS =====
+  // ===== AVATARES — Protagonistas de séries/filmes populares =====
   const AVATARS = [
-    { gradient: 'linear-gradient(135deg, #e50914, #b20710)', label: 'Herói' },
-    { gradient: 'linear-gradient(135deg, #0071eb, #0050a8)', label: 'Detetive' },
-    { gradient: 'linear-gradient(135deg, #46d369, #2d8a42)', label: 'Cientista' },
-    { gradient: 'linear-gradient(135deg, #f5c518, #c49a14)', label: 'Princesa' },
-    { gradient: 'linear-gradient(135deg, #e87c03, #b55e02)', label: 'Guerreiro' },
-    { gradient: 'linear-gradient(135deg, #9b59b6, #6c3483)', label: 'Mago' },
-    { gradient: 'linear-gradient(135deg, #1abc9c, #148f77)', label: 'Robô' },
-    { gradient: 'linear-gradient(135deg, #e74c3c, #922b21)', label: 'Vilão' },
-    { gradient: 'linear-gradient(135deg, #3498db, #1a5276)', label: 'Astronauta' },
-    { gradient: 'linear-gradient(135deg, #2ecc71, #1a7a43)', label: 'Aventureiro' },
-    { gradient: 'linear-gradient(135deg, #f39c12, #9a6007)', label: 'Cowboy' },
-    { gradient: 'linear-gradient(135deg, #8e44ad, #5b2c6f)', label: 'Bruxa' },
-    { gradient: 'linear-gradient(135deg, #16a085, #0e6655)', label: 'Ninja' },
-    { gradient: 'linear-gradient(135deg, #d35400, #873600)', label: 'Pirata' },
-    { gradient: 'linear-gradient(135deg, #2980b9, #1a5276)', label: 'Espião' },
-    { gradient: 'linear-gradient(135deg, #27ae60, #1a6b3c)', label: 'Criança' },
-    { gradient: 'linear-gradient(135deg, #c0392b, #7b241c)', label: 'Vampiro' },
-    { gradient: 'linear-gradient(135deg, #7f8c8d, #4d5656)', label: 'Androide' },
+    { img: 'https://image.tmdb.org/t/p/w185/49WJfeN0moxb9IPfGn8AIqMGskD.jpg', label: 'Walter White' },
+    { img: 'https://image.tmdb.org/t/p/w185/ggFHVNu6YYI5L9pCfOacjizRGt.jpg', label: 'Breaking Bad' },
+    { img: 'https://image.tmdb.org/t/p/w185/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg', label: 'Stranger Things' },
+    { img: 'https://image.tmdb.org/t/p/w185/9faGSFi5jam6pDWGNd0p8JcJgXQ.jpg', label: 'The Last of Us' },
+    { img: 'https://image.tmdb.org/t/p/w185/etj8E2o0Bud0HkONVQPjyCkIvpv.jpg', label: 'Game of Thrones' },
+    { img: 'https://image.tmdb.org/t/p/w185/rcA17r3hfHtRrk3Xs3hXrgGeSGT.jpg', label: 'Oppenheimer' },
+    { img: 'https://image.tmdb.org/t/p/w185/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', label: 'Avengers' },
+    { img: 'https://image.tmdb.org/t/p/w185/rqbCbjB19amtOtFQbb3K2lgm2zv.jpg', label: 'Dune' },
+    { img: 'https://image.tmdb.org/t/p/w185/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg', label: 'The Witcher' },
+    { img: 'https://image.tmdb.org/t/p/w185/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg', label: 'The Boys' },
+    { img: 'https://image.tmdb.org/t/p/w185/2e5c2dFFqR81RB2hAaaBMBXFBce.jpg', label: 'Peaky Blinders' },
+    { img: 'https://image.tmdb.org/t/p/w185/7WUHnWGx5OrhL2FLR6803nFWBl6.jpg', label: 'House of Dragon' },
+    { img: 'https://image.tmdb.org/t/p/w185/wfGfxtBkhBzQfOZw4S8IQZgrH0a.jpg', label: 'Squid Game' },
+    { img: 'https://image.tmdb.org/t/p/w185/56v2KjBlU4XaOv9rVYEQypROD7P.jpg', label: 'Wednesday' },
+    { img: 'https://image.tmdb.org/t/p/w185/oqCIQhHMBqFGHiJMFSqRFMhGnzP.jpg', label: 'Loki' },
+    { img: 'https://image.tmdb.org/t/p/w185/1XDDXPXGiI8id7MrUxK36ke7gkX.jpg', label: 'Mandalorian' },
+    { img: 'https://image.tmdb.org/t/p/w185/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg', label: 'Interstellar' },
+    { img: 'https://image.tmdb.org/t/p/w185/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', label: 'Inception' },
   ];
 
-  // SVG silhueta de personagem (cabeça + ombros)
-  function avatarSVG() {
-    return `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="40" cy="28" r="16" fill="rgba(255,255,255,0.85)"/>
-      <path d="M10 72c0-16.569 13.431-30 30-30s30 13.431 30 30" fill="rgba(255,255,255,0.85)"/>
-    </svg>`;
-  }
+  function avatarSVG() { return ''; }
 
-  function renderAvatarDiv(index, size = 120) {
+  function renderAvatarImg(index, size = 120) {
     const av = AVATARS[index] || AVATARS[0];
-    return `<div style="width:${size}px;height:${size}px;background:${av.gradient};border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${avatarSVG()}</div>`;
+    if (av.img) {
+      return `<img src="${av.img}" alt="${av.label}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:6px;display:block;" referrerpolicy="no-referrer" loading="lazy">`;
+    }
+    return `<div style="width:${size}px;height:${size}px;background:#333;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🎬</div>`;
   }
 
   // ===== STATE =====
@@ -191,11 +181,14 @@
       item.dataset.idx = idx;
 
       const av = AVATARS[profile.avatar] || AVATARS[0];
+      const avatarContent = av.img
+        ? `<img src="${av.img}" alt="${av.label}" style="width:100%;height:100%;object-fit:cover;display:block;" referrerpolicy="no-referrer" loading="lazy">`
+        : `<span style="font-size:2rem;">🎬</span>`;
 
       item.innerHTML = `
         <div class="profile-avatar-wrap">
-          <div class="profile-avatar" style="background:${av.gradient};">
-            ${avatarSVG()}
+          <div class="profile-avatar" style="overflow:hidden;background:#111;">
+            ${avatarContent}
             ${isManageMode ? `
             <div class="profile-edit-overlay">
               <button class="btn-edit-profile" title="Editar" onclick="event.stopPropagation();editProfile(${idx})">
@@ -222,7 +215,6 @@
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
           </div>` : ''}
-          ${profile.isKids ? `<div class="profile-kids-badge">Kids</div>` : ''}
         </div>
         <span class="profile-name">${profile.name}</span>
       `;
@@ -328,8 +320,10 @@
   function openPinModal(profile) {
     pendingProfile = profile;
     const av = AVATARS[profile.avatar] || AVATARS[0];
-    document.getElementById('pinModalAvatar').innerHTML = `
-      <div style="width:80px;height:80px;background:${av.gradient};border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${avatarSVG()}</div>`;
+    const avatarHtml = av.img
+      ? `<img src="${av.img}" alt="${av.label}" style="width:80px;height:80px;border-radius:8px;object-fit:cover;display:block;" referrerpolicy="no-referrer">`
+      : `<div style="width:80px;height:80px;background:#333;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🎬</div>`;
+    document.getElementById('pinModalAvatar').innerHTML = avatarHtml;
     document.getElementById('pinModalName').textContent = profile.name;
     document.getElementById('pinError').textContent = '';
     document.querySelectorAll('.pin-input').forEach(i => { i.value = ''; i.classList.remove('error'); });
@@ -363,13 +357,17 @@
 
   // ===== ADD PROFILE MODAL =====
   function setupAddModal() {
-    // Render avatar grid
     const grid = document.getElementById('addAvatarGrid');
     AVATARS.forEach((av, i) => {
       const opt = document.createElement('div');
       opt.className = 'avatar-option' + (i === 0 ? ' selected' : '');
-      opt.style.background = av.gradient;
-      opt.innerHTML = avatarSVG();
+      opt.title = av.label;
+      if (av.img) {
+        opt.style.cssText = 'background:#111;overflow:hidden;';
+        opt.innerHTML = `<img src="${av.img}" alt="${av.label}" style="width:100%;height:100%;object-fit:cover;display:block;" referrerpolicy="no-referrer" loading="lazy">`;
+      } else {
+        opt.style.background = av.gradient || '#333';
+      }
       opt.addEventListener('click', () => {
         document.querySelectorAll('#addAvatarGrid .avatar-option').forEach(o => o.classList.remove('selected'));
         opt.classList.add('selected');
@@ -413,7 +411,7 @@
       name,
       avatar: selectedAvatarIndex,
       pin: null,
-      isKids: document.getElementById('newProfileKids').checked
+      isKids: false
     };
     profiles.push(newProfile);
     Auth.saveProfiles(user.id, profiles);
