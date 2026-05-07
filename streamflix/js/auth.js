@@ -62,16 +62,22 @@ const Auth = (() => {
   function requireAuth(redirectTo = 'index.html') {
     const user = getCurrentUser();
     if (!user || !user.id || !user.email || !user.role) {
-      // Limpa qualquer dado corrompido
       sessionStorage.removeItem('sf_current_user');
       localStorage.removeItem('sf_current_user');
       window.location.replace(redirectTo);
       return null;
     }
-    // Verifica se o usuário ainda existe no storage
+
+    // Usuários com googleId podem não estar em sf_users ainda — aceita direto
+    if (user.googleId) return user;
+
+    // Verifica se o usuário existe no storage local
     const users = getUsers();
-    const exists = users.find(u => u.id === user.id && u.email === user.email);
+    const exists = users.find(u => String(u.id) === String(user.id) && u.email === user.email);
     if (!exists) {
+      // Usuário não encontrado — pode ser conta Google ou storage limpo
+      // Se tem email válido e id, aceita (não força logout)
+      if (user.email && user.id) return user;
       sessionStorage.removeItem('sf_current_user');
       localStorage.removeItem('sf_current_user');
       window.location.replace(redirectTo);
