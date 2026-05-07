@@ -44,7 +44,7 @@
 **Problema:**
 ```javascript
 // streamflix/js/config.js
-TMDB_API_KEY: '15d2ea6d0dc1d476efbca3eba2b9bbfb', // ❌ EXPOSTO
+TMDB_API_KEY: 'sua_chave_aqui', // ❌ EXPOSTO
 ```
 
 **Solução Recomendada:**

@@ -44,9 +44,9 @@ No Render Dashboard:
 3. Adicione as variáveis:
 
 ```
-SUPABASE_URL=https://lynltvzimbqltpafunmu.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-TMDB_API_KEY=15d2ea6d0dc1d476efbca3eba2b9bbfb
+SUPABASE_URL=sua_url_do_supabase_aqui
+SUPABASE_ANON_KEY=sua_chave_anon_aqui
+TMDB_API_KEY=sua_chave_tmdb_aqui
 APP_NAME=CineFlix Hub
 APP_VERSION=2.0.0
 ```
