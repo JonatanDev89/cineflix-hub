@@ -155,9 +155,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ===== FLUXO NORMAL =====
 
   if (sessionStorage.getItem('from_protected_page')) {
-    console.log('🟡 Login: Limpando sessão (veio de página protegida)');
-    sessionStorage.clear();
-    localStorage.removeItem('sf_current_user');
+    console.log('🟡 Login: Veio de página protegida, removendo flag');
+    // Remove APENAS a flag — não limpa o usuário logado
+    sessionStorage.removeItem('from_protected_page');
+  }
+
+  // Se já tem usuário logado, redireciona direto (não mostra login)
+  const cachedUser = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
+  if (cachedUser) {
+    try {
+      const u = JSON.parse(cachedUser);
+      if (u && u.id) {
+        console.log('🟢 Login: Usuário já logado, redirecionando...');
+        const dest = u.role === 'admin' ? 'dashboard.html' : 'profiles.html';
+        window.location.replace(dest);
+        return;
+      }
+    } catch(e) {}
   }
 
   console.log('✅ Login: Formulário pronto');
