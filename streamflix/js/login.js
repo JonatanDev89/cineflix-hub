@@ -1,54 +1,55 @@
 // ===== LOGIN PAGE LOGIC =====
 document.addEventListener('DOMContentLoaded', async () => {
 
-  console.log('🔵 Login: Página carregada');
+  console.log('🔵 Login: Iniciando página de login');
   
-  // PRIMEIRA COISA: Verificar se veio de página protegida
-  const fromProtected = sessionStorage.getItem('from_protected_page');
-  if (fromProtected) {
-    console.log('🟡 Login: Veio de página protegida, limpando TUDO e parando aqui...');
+  // REGRA SIMPLES: Se tem flag de "from_protected_page", limpa TUDO e para
+  if (sessionStorage.getItem('from_protected_page')) {
+    console.log('🟡 Login: Limpando sessão (veio de página protegida)');
     sessionStorage.clear();
     localStorage.removeItem('sf_current_user');
-    // NÃO faz mais nada, apenas mostra o formulário de login
+    // Para aqui - não verifica nada, só mostra o formulário
+    console.log('✅ Login: Pronto para novo login');
     return;
   }
   
-  // IMPORTANTE: Prevenir loop infinito
-  const loopCount = parseInt(sessionStorage.getItem('login_loop_count') || '0');
-  console.log('🔵 Login: Loop count:', loopCount);
-  
-  if (loopCount > 2) {
-    console.log('🔴 Login: Loop detectado! Limpando tudo e parando...');
-    sessionStorage.clear();
-    localStorage.removeItem('sf_current_user');
-    // NÃO faz mais nada, apenas mostra o formulário de login
-    return;
-  }
-  
-  sessionStorage.setItem('login_loop_count', (loopCount + 1).toString());
-  
-  // Verificar se já está logado (async agora)
+  // REGRA 2: Se já está logado, redireciona (mas SEM criar loop)
   try {
+    // Aguardar Auth carregar
+    let attempts = 0;
+    while (!window.Auth && attempts < 30) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    if (!window.Auth) {
+      console.log('🟡 Login: Auth não carregou, mostrando formulário');
+      return;
+    }
+    
     const currentUser = await Auth.getCurrentUser();
-    console.log('🔵 Login: Usuário atual:', currentUser);
     
     if (currentUser && currentUser.id && currentUser.role) {
-      console.log('🟢 Login: Usuário logado, redirecionando para:', currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html');
+      console.log('🟢 Login: Usuário já logado:', currentUser.email, '- Role:', currentUser.role);
       
-      // Limpar contador antes de redirecionar
-      sessionStorage.removeItem('login_loop_count');
+      // Marcar que estamos redirecionando do login (não de página protegida)
+      sessionStorage.setItem('redirecting_from_login', 'true');
       
       const dest = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
+      console.log('🟢 Login: Redirecionando para:', dest);
+      
+      // Aguardar um pouco antes de redirecionar
+      await new Promise(resolve => setTimeout(resolve, 200));
       window.location.replace(dest);
       return;
-    } else {
-      console.log('🟡 Login: Nenhum usuário logado');
-      sessionStorage.removeItem('login_loop_count');
     }
+    
+    console.log('🟡 Login: Nenhum usuário logado, mostrando formulário');
   } catch (error) {
-    console.log('🟡 Login: Erro ao verificar usuário (normal se não estiver logado):', error.message);
-    sessionStorage.removeItem('login_loop_count');
+    console.log('🟡 Login: Erro ao verificar usuário:', error.message);
   }
+
+  // ===== SETUP DO FORMULÁRIO =====
 
   const tabs = document.querySelectorAll('.auth-tab');
   const loginForm = document.getElementById('loginForm');
@@ -85,25 +86,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btn = loginForm.querySelector('.btn-primary');
     setLoading(btn, true);
     
+    console.log('🔵 Login: Tentando fazer login...');
+    
     // Login agora é async
     const result = await Auth.login(email, password, remember);
     
-    
     setLoading(btn, false);
     if (result.success) {
+      console.log('🟢 Login: Login bem-sucedido!', result.user);
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       
-      // Limpar contador de loop antes de redirecionar
-      sessionStorage.removeItem('login_loop_count');
+      // Limpar qualquer flag antiga
       sessionStorage.removeItem('from_protected_page');
+      sessionStorage.setItem('redirecting_from_login', 'true');
       
-      // Aguardar 300ms antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Aguardar um pouco para o usuário ver a mensagem
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       console.log('🟢 Login: Redirecionando para:', dest);
       window.location.replace(dest);
     } else {
+      console.log('🔴 Login: Falha no login:', result.message);
       showAlert('loginAlert', 'error', result.message);
     }
   });
