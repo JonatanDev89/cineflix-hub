@@ -100,7 +100,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const nomeNovo = session.user.user_metadata?.full_name
           || session.user.user_metadata?.name
           || session.user.email.split('@')[0];
-        await sb.from('users').insert([{
+        
+        const { error: insertError } = await sb.from('users').insert([{
           id: session.user.id,
           email: session.user.email,
           name: nomeNovo,
@@ -108,6 +109,24 @@ document.addEventListener('DOMContentLoaded', async () => {
           is_premium: false,
           avatar: nomeNovo[0].toUpperCase()
         }]);
+        
+        if (insertError) {
+          console.error('🔴 Login OAuth: Erro ao criar usuário:', insertError);
+        } else {
+          console.log('🟢 Login OAuth: Usuário criado com is_premium=false');
+        }
+        
+        // Buscar novamente para garantir dados corretos
+        const { data: newUserData } = await sb
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (newUserData) {
+          userData = newUserData;
+          console.log('🟢 Login OAuth: Dados do novo usuário:', userData);
+        }
       }
 
       const nome = userData?.name
@@ -125,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         picture: session.user.user_metadata?.avatar_url || null
       };
 
-      console.log('🟢 Login OAuth: Usuário processado:', user.email, '| role:', user.role);
+      console.log('🟢 Login OAuth: Usuário processado:', user.email, '| role:', user.role, '| isPremium:', user.isPremium);
 
       // Salvar sessão
       sessionStorage.setItem('sf_current_user', JSON.stringify(user));
