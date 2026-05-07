@@ -531,7 +531,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Esconde "Assinar VIP" se já é premium
-  if (Auth.isPremium(user.id)) {
+  const userIsPremium = await Auth.isPremium(user.id);
+  if (userIsPremium) {
     const premiumLink = document.getElementById('premiumNavLink');
     if (premiumLink) premiumLink.style.display = 'none';
     // Adiciona badge VIP no nome
@@ -1182,7 +1183,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // ---- MONITOR: bloqueia botão "Mostrar Episódios" do embedplay para não-VIP ----
       const blockLayer = document.getElementById('episodeBlockLayer');
-      if (type === 'tv' && !Auth.isPremium(user.id)) {
+      const isUserPremium = await Auth.isPremium(user.id);
+      if (type === 'tv' && !isUserPremium) {
         try {
           const sd = await TMDB.seasons(id, season);
           const hasBlocked = (sd.episodes || []).some(ep => {
