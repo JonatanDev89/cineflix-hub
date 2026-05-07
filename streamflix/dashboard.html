@@ -10,6 +10,8 @@
   <title>CineFlix Hub — Painel Admin</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
   <link rel="stylesheet" href="css/dashboard.css" />
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Verificação de segurança — roda ANTES de qualquer conteúdo renderizar -->
   <script>
     (async function() {
@@ -749,7 +751,8 @@
   <!-- ===== TOAST CONTAINER ===== -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
   <script>
     // Render sub-tables on section change
     document.addEventListener('DOMContentLoaded', () => {
