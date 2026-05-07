@@ -339,6 +339,17 @@ const SupabaseAuth = (() => {
     }
   }
 
+  async function isPremium(userId) {
+    try {
+      const users = await getAllUsers();
+      const user = users.find(u => u.id === userId);
+      return user ? !!user.is_premium : false;
+    } catch (error) {
+      console.error('Erro ao verificar premium:', error);
+      return false;
+    }
+  }
+
   async function setPremium(userId, isPremium) {
     return updateUser(userId, {
       is_premium: isPremium,
@@ -611,6 +622,7 @@ const SupabaseAuth = (() => {
     getAllUsers,
     updateUser,
     setPremium,
+    isPremium,
     
     // Profiles
     getProfiles,

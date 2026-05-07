@@ -6,6 +6,8 @@
   <title>CineFlix Hub — Perfis</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
   <link rel="stylesheet" href="css/profiles.css" />
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (function() {
       try {
@@ -97,7 +99,8 @@
     </div>
   </div>
 
-  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
   <script>
   // ===== AVATAR DEFINITIONS =====
   const AVATARS = [
@@ -146,8 +149,9 @@
     console.log('🔵 Profiles: Iniciando...');
     
     try {
+      console.log('🔵 Profiles: Chamando Auth.requireAuth...');
       user = await Auth.requireAuth('index.html');
-      console.log('🔵 Profiles: Usuário autenticado:', user);
+      console.log('🔵 Profiles: requireAuth retornou:', user);
       
       if (!user) {
         console.log('🔴 Profiles: Sem usuário, redirecionando...');

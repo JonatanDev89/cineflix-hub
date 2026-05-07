@@ -6,6 +6,8 @@
   <title>CineFlix Hub — Início</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
   <link rel="stylesheet" href="css/home.css" />
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // Proteção rápida antes de renderizar
     (function() {
@@ -452,7 +454,8 @@
   <div class="cinema-fade"></div>
 </div>
 
-<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
 <script src="js/tmdb.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
