@@ -96,6 +96,7 @@ const SupabaseAuth = (() => {
 
   async function login(email, password, remember = false) {
     try {
+      console.log('🔵 SupabaseAuth.login: Iniciando login para:', email);
       const sb = await waitForSupabase();
 
       const { data, error } = await sb.auth.signInWithPassword({
@@ -104,7 +105,7 @@ const SupabaseAuth = (() => {
       });
 
       if (error) {
-        console.error('Erro no login:', error);
+        console.error('🔴 SupabaseAuth.login: Erro no login:', error);
         return { 
           success: false, 
           message: error.message === 'Invalid login credentials' 
@@ -112,6 +113,8 @@ const SupabaseAuth = (() => {
             : 'Erro ao fazer login: ' + error.message 
         };
       }
+
+      console.log('🟢 SupabaseAuth.login: Login no Supabase OK, buscando dados do usuário...');
 
       // Buscar dados adicionais do usuário
       const { data: userData, error: userError } = await sb
@@ -121,7 +124,7 @@ const SupabaseAuth = (() => {
         .single();
 
       if (userError) {
-        console.error('Erro ao buscar dados do usuário:', userError);
+        console.error('🟡 SupabaseAuth.login: Erro ao buscar dados do usuário:', userError);
       }
 
       const user = {
@@ -133,13 +136,27 @@ const SupabaseAuth = (() => {
         isPremium: userData?.is_premium || false
       };
 
+      console.log('🟢 SupabaseAuth.login: Dados do usuário:', {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name
+      });
+
       // Salvar sessão localmente
       const storage = remember ? localStorage : sessionStorage;
+      const storageType = remember ? 'localStorage' : 'sessionStorage';
+      
+      console.log('🟢 SupabaseAuth.login: Salvando usuário em:', storageType);
       storage.setItem('sf_current_user', JSON.stringify(user));
+      
+      // Verificar se salvou
+      const saved = storage.getItem('sf_current_user');
+      console.log('🟢 SupabaseAuth.login: Verificação - usuário salvo?', saved ? 'SIM' : 'NÃO');
 
       return { success: true, user };
     } catch (error) {
-      console.error('Erro:', error);
+      console.error('🔴 SupabaseAuth.login: Erro crítico:', error);
       return { success: false, message: 'Erro ao conectar com o servidor.' };
     }
   }
@@ -164,35 +181,56 @@ const SupabaseAuth = (() => {
   async function getCurrentUser() {
     try {
       console.log('🔵 SupabaseAuth.getCurrentUser: Iniciando...');
+      console.log('🔵 SupabaseAuth.getCurrentUser: Verificando sessionStorage...');
       
       // Primeiro tenta pegar do cache
-      const cached = sessionStorage.getItem('sf_current_user') || localStorage.getItem('sf_current_user');
+      const sessionCache = sessionStorage.getItem('sf_current_user');
+      const localCache = localStorage.getItem('sf_current_user');
+      
+      console.log('🔵 SupabaseAuth.getCurrentUser: sessionStorage:', sessionCache ? 'EXISTE' : 'VAZIO');
+      console.log('🔵 SupabaseAuth.getCurrentUser: localStorage:', localCache ? 'EXISTE' : 'VAZIO');
+      
+      const cached = sessionCache || localCache;
+      
       if (cached) {
-        console.log('🟢 SupabaseAuth.getCurrentUser: Usuário do cache:', cached);
+        console.log('🟢 SupabaseAuth.getCurrentUser: Usuário encontrado no cache');
         const user = JSON.parse(cached);
-        console.log('🟢 SupabaseAuth.getCurrentUser: Retornando:', user);
+        console.log('🟢 SupabaseAuth.getCurrentUser: Dados:', {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        });
         return user;
       }
 
-      console.log('🟡 SupabaseAuth.getCurrentUser: Sem cache, verificando Supabase...');
+      console.log('🟡 SupabaseAuth.getCurrentUser: Sem cache local, verificando Supabase...');
 
       // Se não tem cache, verifica sessão do Supabase
       const sb = await waitForSupabase();
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { user }, error: authError } = await sb.auth.getUser();
+      
+      if (authError) {
+        console.log('🔴 SupabaseAuth.getCurrentUser: Erro ao buscar do Supabase:', authError.message);
+        return null;
+      }
       
       if (!user) {
         console.log('🟡 SupabaseAuth.getCurrentUser: Sem usuário no Supabase');
         return null;
       }
 
-      console.log('🟢 SupabaseAuth.getCurrentUser: Usuário do Supabase:', user.id);
+      console.log('🟢 SupabaseAuth.getCurrentUser: Usuário encontrado no Supabase:', user.id);
 
       // Buscar dados adicionais
-      const { data: userData } = await sb
+      const { data: userData, error: userError } = await sb
         .from('users')
         .select('*')
         .eq('id', user.id)
         .single();
+      
+      if (userError) {
+        console.log('🟡 SupabaseAuth.getCurrentUser: Erro ao buscar dados do usuário:', userError.message);
+      }
 
       const currentUser = {
         id: user.id,
@@ -207,7 +245,7 @@ const SupabaseAuth = (() => {
       sessionStorage.setItem('sf_current_user', JSON.stringify(currentUser));
       return currentUser;
     } catch (error) {
-      console.error('🔴 SupabaseAuth.getCurrentUser: Erro:', error);
+      console.error('🔴 SupabaseAuth.getCurrentUser: Erro crítico:', error);
       return null;
     }
   }

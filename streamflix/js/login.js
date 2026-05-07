@@ -1,53 +1,19 @@
 // ===== LOGIN PAGE LOGIC =====
 document.addEventListener('DOMContentLoaded', async () => {
 
-  console.log('🔵 Login: Iniciando página de login');
+  console.log('🔵 Login: Página carregada');
   
-  // REGRA SIMPLES: Se tem flag de "from_protected_page", limpa TUDO e para
+  // REGRA ÚNICA: Se tem flag de "from_protected_page", limpa TUDO
   if (sessionStorage.getItem('from_protected_page')) {
     console.log('🟡 Login: Limpando sessão (veio de página protegida)');
     sessionStorage.clear();
     localStorage.removeItem('sf_current_user');
-    // Para aqui - não verifica nada, só mostra o formulário
-    console.log('✅ Login: Pronto para novo login');
-    return;
+    console.log('✅ Login: Sessão limpa, mostrando formulário');
   }
   
-  // REGRA 2: Se já está logado, redireciona (mas SEM criar loop)
-  try {
-    // Aguardar Auth carregar
-    let attempts = 0;
-    while (!window.Auth && attempts < 30) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      attempts++;
-    }
-    
-    if (!window.Auth) {
-      console.log('🟡 Login: Auth não carregou, mostrando formulário');
-      return;
-    }
-    
-    const currentUser = await Auth.getCurrentUser();
-    
-    if (currentUser && currentUser.id && currentUser.role) {
-      console.log('🟢 Login: Usuário já logado:', currentUser.email, '- Role:', currentUser.role);
-      
-      // Marcar que estamos redirecionando do login (não de página protegida)
-      sessionStorage.setItem('redirecting_from_login', 'true');
-      
-      const dest = currentUser.role === 'admin' ? 'dashboard.html' : 'profiles.html';
-      console.log('🟢 Login: Redirecionando para:', dest);
-      
-      // Aguardar um pouco antes de redirecionar
-      await new Promise(resolve => setTimeout(resolve, 200));
-      window.location.replace(dest);
-      return;
-    }
-    
-    console.log('🟡 Login: Nenhum usuário logado, mostrando formulário');
-  } catch (error) {
-    console.log('🟡 Login: Erro ao verificar usuário:', error.message);
-  }
+  // NÃO verifica se está logado aqui - deixa o usuário ver o formulário
+  // A verificação só acontece quando clicar em "Entrar"
+  console.log('✅ Login: Formulário pronto');
 
   // ===== SETUP DO FORMULÁRIO =====
 
