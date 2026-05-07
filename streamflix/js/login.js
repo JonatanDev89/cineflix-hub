@@ -1,86 +1,143 @@
 // ===== LOGIN PAGE LOGIC =====
+
+// ===== FUNÇÃO DE LOADING OAUTH (definida primeiro para poder ser chamada imediatamente) =====
+function showOAuthLoading(show) {
+  let overlay = document.getElementById('oauthLoadingOverlay');
+  if (show && !overlay) {
+    const insert = () => {
+      overlay = document.createElement('div');
+      overlay.id = 'oauthLoadingOverlay';
+      overlay.style.cssText = `
+        position:fixed;inset:0;z-index:9999;
+        background:rgba(0,0,0,0.92);
+        display:flex;flex-direction:column;
+        align-items:center;justify-content:center;gap:16px;
+        backdrop-filter:blur(8px);
+      `;
+      overlay.innerHTML = `
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" style="animation:oauthSpin 0.8s linear infinite">
+          <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke="#e50914" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <p style="color:#fff;font-size:1rem;font-weight:600;font-family:sans-serif;">Autenticando com Google...</p>
+        <style>@keyframes oauthSpin { to { transform: rotate(360deg); } }</style>
+      `;
+      document.body.appendChild(overlay);
+    };
+    if (document.body) insert();
+    else document.addEventListener('DOMContentLoaded', insert);
+  } else if (!show && overlay) {
+    overlay.remove();
+  }
+}
+
+// ===== DETECTA CALLBACK OAUTH ANTES DO DOM =====
+const _isOAuthCallback = window.location.hash.includes('access_token') ||
+                         window.location.search.includes('code=');
+
+if (_isOAuthCallback) {
+  showOAuthLoading(true);
+}
+
+// ===== MAIN =====
 document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('🔵 Login: Página carregada');
 
-  // ===== HANDLER DO CALLBACK OAUTH (Google, etc.) =====
-  // Quando o Supabase redireciona de volta, a URL contém #access_token ou ?code=
-  const hash = window.location.hash;
-  const search = window.location.search;
-  const isOAuthCallback = hash.includes('access_token') || search.includes('code=') || hash.includes('error');
-
-  if (isOAuthCallback) {
-    console.log('🟡 Login: Detectado callback OAuth, processando sessão...');
-    showOAuthLoading(true);
+  // ===== HANDLER DO CALLBACK OAUTH =====
+  if (_isOAuthCallback) {
+    console.log('🟡 Login OAuth: Processando callback...');
 
     try {
       // Aguardar Supabase inicializar
-      let attempts = 0;
-      while (!window.supabaseClient && attempts < 80) {
+      let sb = null;
+      for (let i = 0; i < 100; i++) {
         await new Promise(r => setTimeout(r, 100));
-        attempts++;
+
+        // Tentar pegar cliente já inicializado
+        if (window.supabaseClient) {
+          sb = window.supabaseClient;
+          break;
+        }
+
+        // Tentar inicializar manualmente se o CDN já carregou
+        if (window.supabase) {
+          const url = (window.CONFIG || {}).SUPABASE_URL || 'https://lynltvzimbqltpafunmu.supabase.co';
+          const key = (window.CONFIG || {}).SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5bmx0dnppbWJxbHRwYWZ1bm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMzE2MzIsImV4cCI6MjA5MzYwNzYzMn0.XuF30WIDCYKtC9gD7ZNc03LqMNvw9o0Ujp7ptlxqk30';
+          window.supabaseClient = window.supabase.createClient(url, key);
+          sb = window.supabaseClient;
+          break;
+        }
       }
 
-      const sb = Auth.getClient();
-      if (!sb) throw new Error('Supabase não inicializado');
+      if (!sb) throw new Error('Supabase não inicializou após 10s');
 
-      // Pegar sessão que o Supabase já processou automaticamente via URL
+      console.log('🟢 Login OAuth: Supabase pronto, buscando sessão...');
+
+      // Supabase SDK processa o hash automaticamente
       const { data: { session }, error } = await sb.auth.getSession();
 
       if (error || !session) {
-        console.error('🔴 Login OAuth: Sem sessão válida', error);
+        console.error('🔴 Login OAuth: Sem sessão válida', error?.message);
         showOAuthLoading(false);
-        showAlert('loginAlert', 'error', '❌ Falha ao autenticar com Google. Tente novamente.');
-        // Limpar hash da URL
         history.replaceState(null, '', window.location.pathname);
+        showAlert('loginAlert', 'error', '❌ Falha ao autenticar com Google. Tente novamente.');
         return;
       }
 
-      console.log('🟢 Login OAuth: Sessão obtida para', session.user.email);
+      console.log('🟢 Login OAuth: Sessão OK para', session.user.email);
 
-      // Buscar ou criar dados do usuário na tabela users
+      // Buscar dados do usuário na tabela users
       const { data: userData } = await sb
         .from('users')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-      // Se não existe na tabela users, criar
+      // Criar registro se for primeiro login com Google
       if (!userData) {
-        console.log('🟡 Login OAuth: Usuário novo, criando registro...');
+        console.log('🟡 Login OAuth: Primeiro login, criando usuário...');
+        const nomeNovo = session.user.user_metadata?.full_name
+          || session.user.user_metadata?.name
+          || session.user.email.split('@')[0];
         await sb.from('users').insert([{
           id: session.user.id,
           email: session.user.email,
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0],
+          name: nomeNovo,
           role: 'user',
           is_premium: false,
-          avatar: (session.user.user_metadata?.full_name || 'U')[0].toUpperCase()
+          avatar: nomeNovo[0].toUpperCase()
         }]);
       }
+
+      const nome = userData?.name
+        || session.user.user_metadata?.full_name
+        || session.user.user_metadata?.name
+        || 'Usuário';
 
       const user = {
         id: session.user.id,
         email: session.user.email,
-        name: userData?.name || session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Usuário',
+        name: nome,
         role: userData?.role || 'user',
-        avatar: userData?.avatar || (session.user.user_metadata?.full_name || 'U')[0].toUpperCase(),
+        avatar: userData?.avatar || nome[0].toUpperCase(),
         isPremium: userData?.is_premium || false,
         picture: session.user.user_metadata?.avatar_url || null
       };
 
       console.log('🟢 Login OAuth: Usuário processado:', user.email, '| role:', user.role);
 
-      // Salvar na sessão
+      // Salvar sessão
       sessionStorage.setItem('sf_current_user', JSON.stringify(user));
       sessionStorage.removeItem('from_protected_page');
 
-      // Limpar hash/params da URL antes de redirecionar
+      // Limpar hash da URL
       history.replaceState(null, '', window.location.pathname);
 
-      showAlert('loginAlert', 'success', `✓ Bem-vindo, ${user.name.split(' ')[0]}! Redirecionando...`);
       showOAuthLoading(false);
+      showAlert('loginAlert', 'success', `✓ Bem-vindo, ${nome.split(' ')[0]}! Redirecionando...`);
 
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 700));
 
       const dest = user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
       console.log('🟢 Login OAuth: Redirecionando para', dest);
@@ -90,24 +147,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       console.error('🔴 Login OAuth: Erro crítico', err);
       showOAuthLoading(false);
-      showAlert('loginAlert', 'error', '❌ Erro ao processar login com Google. Tente novamente.');
       history.replaceState(null, '', window.location.pathname);
+      showAlert('loginAlert', 'error', '❌ Erro ao processar login com Google. Tente novamente.');
     }
   }
 
   // ===== FLUXO NORMAL =====
 
-  // REGRA ÚNICA: Se tem flag de "from_protected_page", limpa TUDO
   if (sessionStorage.getItem('from_protected_page')) {
     console.log('🟡 Login: Limpando sessão (veio de página protegida)');
     sessionStorage.clear();
     localStorage.removeItem('sf_current_user');
-    console.log('✅ Login: Sessão limpa, mostrando formulário');
   }
 
   console.log('✅ Login: Formulário pronto');
-
-  // ===== SETUP DO FORMULÁRIO =====
 
   const tabs = document.querySelectorAll('.auth-tab');
   const loginForm = document.getElementById('loginForm');
@@ -146,22 +199,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!password) { showFieldError('loginPassword', 'Digite sua senha.'); return; }
     const btn = loginForm.querySelector('.btn-primary');
     setLoading(btn, true);
-
     console.log('🔵 Login: Tentando fazer login...');
     const result = await Auth.login(email, password, remember);
-
     setLoading(btn, false);
     if (result.success) {
-      console.log('🟢 Login: Login bem-sucedido!', result.user);
       showAlert('loginAlert', 'success', '✓ Login realizado! Redirecionando...');
       sessionStorage.removeItem('from_protected_page');
-      sessionStorage.setItem('redirecting_from_login', 'true');
       await new Promise(resolve => setTimeout(resolve, 500));
       const dest = result.user.role === 'admin' ? 'dashboard.html' : 'profiles.html';
-      console.log('🟢 Login: Redirecionando para:', dest);
       window.location.replace(dest);
     } else {
-      console.log('🔴 Login: Falha no login:', result.message);
       showAlert('loginAlert', 'error', result.message);
     }
   });
@@ -238,6 +285,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function showAlert(id, type, message) {
     const el = document.getElementById(id);
+    if (!el) return;
     el.className = `alert alert-${type} show`;
     el.innerHTML = message;
   }
@@ -247,30 +295,3 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openModal(id) { document.getElementById(id).classList.add('show'); }
   function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 });
-
-// Mostra/oculta overlay de loading durante callback OAuth
-function showOAuthLoading(show) {
-  let overlay = document.getElementById('oauthLoadingOverlay');
-  if (show && !overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'oauthLoadingOverlay';
-    overlay.style.cssText = `
-      position:fixed;inset:0;z-index:9999;
-      background:rgba(0,0,0,0.85);
-      display:flex;flex-direction:column;
-      align-items:center;justify-content:center;gap:16px;
-      backdrop-filter:blur(8px);
-    `;
-    overlay.innerHTML = `
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="animation:spin 0.8s linear infinite">
-        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
-        <path d="M12 2a10 10 0 0 1 10 10" stroke="#e50914" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-      <p style="color:#fff;font-size:1rem;font-weight:600;">Autenticando com Google...</p>
-      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-    `;
-    document.body.appendChild(overlay);
-  } else if (!show && overlay) {
-    overlay.remove();
-  }
-}
