@@ -12,8 +12,11 @@
 </head>
 <body>
 
-  <!-- ===== BACKGROUND ===== -->
-  <div class="login-bg"></div>
+  <!-- ===== BACKGROUND SLIDESHOW ===== -->
+  <div class="login-bg" id="loginBg">
+    <!-- Slides gerados via JS com posters do TMDB -->
+  </div>
+  <div class="bg-indicators" id="bgIndicators"></div>
 
   <!-- ===== HEADER ===== -->
   <header class="login-header">
@@ -63,7 +66,7 @@
         <div class="divider">ou continue com</div>
 
         <div class="social-buttons">
-          <button type="button" class="btn-social" onclick="alert('Login social em breve!')">
+          <button type="button" class="btn-social btn-google" id="btnGoogleLogin">
             <!-- Google Icon -->
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -73,20 +76,22 @@
             </svg>
             Continuar com Google
           </button>
-          <button type="button" class="btn-social" onclick="alert('Login social em breve!')">
-            <!-- Facebook Icon -->
-            <svg viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            Continuar com Facebook
-          </button>
         </div>
 
-        <p class="terms-note">
-          Ao entrar, você concorda com nossos
-          <a href="#" data-modal="termsModal">Termos de Uso</a> e
-          <a href="#" data-modal="privacyModal">Política de Privacidade</a>.
-        </p>
+        <!-- Toggle de Termos de Uso -->
+        <div class="terms-note">
+          <div class="terms-toggle-wrap">
+            <label class="terms-toggle" aria-label="Concordar com os termos">
+              <input type="checkbox" id="termsToggle" />
+              <span class="terms-slider"></span>
+            </label>
+          </div>
+          <span class="terms-text">
+            Ao entrar, você concorda com nossos
+            <a href="#" data-modal="termsModal">Termos de Uso</a> e
+            <a href="#" data-modal="privacyModal">Política de Privacidade</a>.
+          </span>
+        </div>
       </form>
 
       <!-- ===== REGISTER FORM ===== -->
@@ -367,13 +372,67 @@
   <script src="js/config.js"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/login.js"></script>
+
+  <!-- ===== SLIDESHOW DE FUNDO ===== -->
+  <script>
+  (function() {
+    // Posters de filmes/séries populares via TMDB (backdrop_path)
+    const backdrops = [
+      'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg',  // Stranger Things
+      'https://image.tmdb.org/t/p/original/9faGSFi5jam6pDWGNd0p8JcJgXQ.jpg',  // The Last of Us
+      'https://image.tmdb.org/t/p/original/ggFHVNu6YYI5L9pCfOacjizRGt.jpg',   // Breaking Bad
+      'https://image.tmdb.org/t/p/original/etj8E2o0Bud0HkONVQPjyCkIvpv.jpg',  // Game of Thrones
+      'https://image.tmdb.org/t/p/original/rcA17r3hfHtRrk3Xs3hXrgGeSGT.jpg',  // Oppenheimer
+      'https://image.tmdb.org/t/p/original/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',  // Avengers
+      'https://image.tmdb.org/t/p/original/rqbCbjB19amtOtFQbb3K2lgm2zv.jpg',  // Dune
+    ];
+
+    const bg = document.getElementById('loginBg');
+    const indicators = document.getElementById('bgIndicators');
+    let current = 0;
+    let timer;
+
+    // Criar slides
+    const slides = backdrops.map((url, i) => {
+      const div = document.createElement('div');
+      div.className = 'bg-slide' + (i === 0 ? ' active' : '');
+      div.style.backgroundImage = `url('${url}')`;
+      bg.appendChild(div);
+      return div;
+    });
+
+    // Criar indicadores
+    backdrops.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'bg-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      indicators.appendChild(dot);
+    });
+
+    function goTo(index) {
+      slides[current].classList.remove('active');
+      indicators.children[current].classList.remove('active');
+      current = index;
+      slides[current].classList.add('active');
+      indicators.children[current].classList.add('active');
+      clearInterval(timer);
+      timer = setInterval(next, 6000);
+    }
+
+    function next() {
+      goTo((current + 1) % slides.length);
+    }
+
+    timer = setInterval(next, 6000);
+  })();
+  </script>
+
+  <!-- ===== VERSÃO & GOOGLE OAUTH ===== -->
   <script>
     (function() {
       try {
-        // Marca de versão — se não existe, é primeira vez ou storage antigo
         const version = localStorage.getItem('cf_version');
         if (version !== '2.0') {
-          // Limpa tudo e marca a nova versão
           localStorage.clear();
           sessionStorage.clear();
           localStorage.setItem('cf_version', '2.0');
@@ -381,6 +440,73 @@
         }
       } catch(e) {}
     })();
+
+    // ===== GOOGLE LOGIN =====
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnGoogle = document.getElementById('btnGoogleLogin');
+      if (!btnGoogle) return;
+
+      btnGoogle.addEventListener('click', async function() {
+        btnGoogle.classList.add('loading');
+        btnGoogle.disabled = true;
+        btnGoogle.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="animation:spin 0.7s linear infinite">
+            <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          Conectando com Google...
+        `;
+
+        try {
+          // Aguardar Supabase inicializar
+          let attempts = 0;
+          while (!window.supabaseClient && attempts < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+          }
+
+          const sb = Auth.getClient();
+          if (!sb) throw new Error('Supabase não inicializado');
+
+          // Monta a URL de redirect corretamente para local e produção
+          const base = window.location.href.replace(/index\.html.*$/, '').replace(/\/$/, '');
+          const redirectTo = base + '/profiles.html';
+
+          const { data, error } = await sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectTo,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'select_account',
+              }
+            }
+          });
+
+          if (error) throw error;
+          // O Supabase redireciona automaticamente para o Google
+        } catch (err) {
+          console.error('Erro no login Google:', err);
+          btnGoogle.classList.remove('loading');
+          btnGoogle.disabled = false;
+          btnGoogle.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continuar com Google
+          `;
+          // Mostrar erro no alert
+          const alertEl = document.getElementById('loginAlert');
+          if (alertEl) {
+            alertEl.className = 'alert alert-error show';
+            alertEl.textContent = 'Erro ao conectar com Google. Verifique se o provedor está habilitado no Supabase.';
+          }
+        }
+      });
+    });
   </script>
 </body>
 </html>

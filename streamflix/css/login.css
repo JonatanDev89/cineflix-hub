@@ -9,16 +9,16 @@
   --netflix-red: #e50914;
   --netflix-red-hover: #f40612;
   --dark-bg: #141414;
-  --card-bg: rgba(0, 0, 0, 0.75);
-  --input-bg: #333;
-  --input-border: #8c8c8c;
+  --card-bg: rgba(0, 0, 0, 0.82);
+  --input-bg: #2a2a2a;
+  --input-border: #555;
   --text-primary: #fff;
   --text-secondary: #b3b3b3;
   --text-muted: #737373;
   --link-color: #fff;
   --error-color: #e87c03;
   --success-color: #46d369;
-  --overlay: rgba(0, 0, 0, 0.6);
+  --overlay: rgba(0, 0, 0, 0.55);
 }
 
 body {
@@ -29,19 +29,68 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== BACKGROUND ===== */
+/* ===== BACKGROUND SLIDESHOW ===== */
 .login-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: url('https://assets.nflxext.com/ffe/siteui/vlv3/9134db96-10d6-4a64-a619-a21da22f8999/a449fabb-05e4-4c8a-b062-b0bec7d03085/BR-pt-20240101-popsignuptwoweeks-perspective_alpha_website_large.jpg') center/cover no-repeat;
+  overflow: hidden;
 }
 
+.bg-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+  transform: scale(1.05);
+  animation: slowZoom 20s ease-in-out infinite alternate;
+}
+
+.bg-slide.active {
+  opacity: 1;
+}
+
+@keyframes slowZoom {
+  from { transform: scale(1.05); }
+  to   { transform: scale(1.12); }
+}
+
+/* Gradiente escuro sobre o fundo */
 .login-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--overlay);
+  z-index: 2;
+  background:
+    linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.75) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%);
+}
+
+/* Indicadores do slideshow */
+.bg-indicators {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+}
+
+.bg-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transition: background 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+
+.bg-dot.active {
+  background: var(--netflix-red);
+  transform: scale(1.3);
 }
 
 /* ===== HEADER ===== */
@@ -61,6 +110,7 @@ body {
   letter-spacing: -1px;
   text-decoration: none;
   text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(229,9,20,0.4);
 }
 
 .logo span {
@@ -81,32 +131,27 @@ body {
 /* ===== LOGIN CARD ===== */
 .login-card {
   background: var(--card-bg);
-  border-radius: 6px;
-  padding: 60px 68px 40px;
+  border-radius: 10px;
+  padding: 52px 60px 36px;
   width: 100%;
-  max-width: 450px;
-  backdrop-filter: blur(2px);
-  border: 1px solid rgba(255,255,255,0.05);
-  animation: fadeInUp 0.4s ease;
+  max-width: 440px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(28px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-.login-card h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 28px;
-  color: var(--text-primary);
 }
 
 /* ===== TABS ===== */
 .auth-tabs {
   display: flex;
-  margin-bottom: 24px;
-  border-bottom: 2px solid rgba(255,255,255,0.1);
+  margin-bottom: 28px;
+  border-bottom: 2px solid rgba(255,255,255,0.08);
 }
 
 .auth-tab {
@@ -134,30 +179,32 @@ body {
   right: 0;
   height: 2px;
   background: var(--netflix-red);
+  border-radius: 2px;
 }
 
 /* ===== FORM ===== */
 .form-group {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 16px 16px 6px;
+  padding: 18px 16px 6px;
   background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
+  border: 1.5px solid var(--input-border);
+  border-radius: 6px;
   color: var(--text-primary);
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
-  height: 56px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  height: 58px;
 }
 
 .form-group input:focus {
-  border-color: #a0a0a0;
-  background: #454545;
+  border-color: rgba(255,255,255,0.5);
+  background: #333;
+  box-shadow: 0 0 0 3px rgba(229,9,20,0.12);
 }
 
 .form-group input.error {
@@ -192,9 +239,10 @@ body {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   padding: 4px;
+  letter-spacing: 0.5px;
 }
 
 .form-group .toggle-password:hover {
@@ -203,7 +251,7 @@ body {
 
 .field-error {
   color: var(--error-color);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   margin-top: 4px;
   display: none;
 }
@@ -217,7 +265,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .checkbox-label {
@@ -256,18 +304,20 @@ body {
   background: var(--netflix-red);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
   letter-spacing: 0.5px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 16px rgba(229,9,20,0.35);
 }
 
 .btn-primary:hover {
   background: var(--netflix-red-hover);
+  box-shadow: 0 6px 20px rgba(229,9,20,0.5);
 }
 
 .btn-primary:active {
@@ -304,7 +354,7 @@ body {
   gap: 12px;
   margin: 20px 0;
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
 .divider::before,
@@ -312,7 +362,7 @@ body {
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.12);
 }
 
 /* ===== SOCIAL LOGIN ===== */
@@ -320,7 +370,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .btn-social {
@@ -329,20 +379,39 @@ body {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 12px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 4px;
+  padding: 13px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.14);
+  border-radius: 6px;
   color: var(--text-primary);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
   text-decoration: none;
 }
 
 .btn-social:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.28);
+}
+
+.btn-social:active {
+  transform: scale(0.98);
+}
+
+.btn-social.btn-google {
+  border-color: rgba(66,133,244,0.35);
+}
+
+.btn-social.btn-google:hover {
+  background: rgba(66,133,244,0.1);
+  border-color: rgba(66,133,244,0.55);
+}
+
+.btn-social.loading {
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .btn-social svg {
@@ -351,11 +420,88 @@ body {
   flex-shrink: 0;
 }
 
+/* ===== TERMS NOTE COM TOGGLE ===== */
+.terms-note {
+  margin-top: 14px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.terms-toggle-wrap {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Toggle switch para termos */
+.terms-toggle {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.terms-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.terms-slider {
+  position: absolute;
+  inset: 0;
+  background: #444;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.25s;
+  border: 1.5px solid rgba(255,255,255,0.1);
+}
+
+.terms-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 1px;
+  background: #aaa;
+  border-radius: 50%;
+  transition: transform 0.25s, background 0.25s;
+}
+
+.terms-toggle input:checked + .terms-slider {
+  background: var(--netflix-red);
+  border-color: var(--netflix-red);
+}
+
+.terms-toggle input:checked + .terms-slider::before {
+  transform: translateX(16px);
+  background: #fff;
+}
+
+.terms-text {
+  flex: 1;
+}
+
+.terms-text a {
+  color: rgba(255,255,255,0.65);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+
+.terms-text a:hover {
+  color: #fff;
+}
+
 /* ===== FOOTER TEXT ===== */
 .login-footer-text {
-  margin-top: 20px;
+  margin-top: 18px;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .login-footer-text a {
@@ -368,26 +514,10 @@ body {
   text-decoration: underline;
 }
 
-.terms-note {
-  margin-top: 16px;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-.terms-note a {
-  color: var(--text-muted);
-  text-decoration: underline;
-}
-
-.terms-note a:hover {
-  color: var(--text-primary);
-}
-
 /* ===== ALERT ===== */
 .alert {
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.88rem;
   margin-bottom: 16px;
   display: none;
@@ -398,13 +528,13 @@ body {
 .alert.show { display: flex; }
 
 .alert-error {
-  background: rgba(232, 124, 3, 0.15);
+  background: rgba(232, 124, 3, 0.12);
   border: 1px solid var(--error-color);
   color: var(--error-color);
 }
 
 .alert-success {
-  background: rgba(70, 211, 105, 0.15);
+  background: rgba(70, 211, 105, 0.12);
   border: 1px solid var(--success-color);
   color: var(--success-color);
 }
@@ -416,8 +546,8 @@ body {
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(20, 20, 20, 0.97);
-  border-top: 1px solid rgba(255,255,255,0.1);
+  background: rgba(18, 18, 18, 0.97);
+  border-top: 1px solid rgba(255,255,255,0.08);
   padding: 20px 40px;
   display: flex;
   align-items: center;
@@ -425,7 +555,7 @@ body {
   gap: 20px;
   transform: translateY(100%);
   transition: transform 0.4s ease;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 }
 
 .cookie-banner.show {
@@ -472,7 +602,7 @@ body {
   background: var(--netflix-red);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
@@ -488,8 +618,8 @@ body {
   padding: 10px 24px;
   background: transparent;
   color: var(--text-primary);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
@@ -498,7 +628,7 @@ body {
 }
 
 .btn-cookie-settings:hover {
-  border-color: rgba(255,255,255,0.6);
+  border-color: rgba(255,255,255,0.55);
   background: rgba(255,255,255,0.05);
 }
 
@@ -507,7 +637,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,0.88);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -523,8 +653,8 @@ body {
 }
 
 .modal {
-  background: #1a1a1a;
-  border-radius: 8px;
+  background: #1c1c1c;
+  border-radius: 10px;
   width: 100%;
   max-width: 560px;
   max-height: 80vh;
@@ -543,10 +673,10 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 24px 28px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
   position: sticky;
   top: 0;
-  background: #1a1a1a;
+  background: #1c1c1c;
   z-index: 1;
 }
 
@@ -609,8 +739,8 @@ body {
   justify-content: space-between;
   gap: 16px;
   padding: 16px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.06);
 }
 
@@ -678,7 +808,7 @@ body {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255,255,255,0.07);
 }
 
 /* ===== FOOTER ===== */
@@ -723,7 +853,7 @@ body {
   }
 
   .login-card {
-    padding: 40px 28px 28px;
+    padding: 36px 24px 28px;
   }
 
   .cookie-banner {
@@ -745,11 +875,15 @@ body {
   .page-footer {
     padding: 30px 24px;
   }
+
+  .bg-indicators {
+    bottom: 160px;
+  }
 }
 
 @media (max-width: 480px) {
   .login-card {
-    padding: 32px 20px 24px;
+    padding: 28px 18px 22px;
   }
 
   .form-options {
@@ -757,4 +891,9 @@ body {
     align-items: flex-start;
     gap: 10px;
   }
+}
+
+/* Spin usado no botão Google durante loading */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
